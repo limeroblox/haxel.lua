@@ -25,22 +25,22 @@ local Localization = WindUI:Localization({
             ["LOAD_CONFIG"] = "Load Configuration",
             ["TRANSPARENCY"] = "Window Transparency"
         }
-      ["ru"] = {
-        ["HAXEL_TITLE"] = "Haxel.lua",
-        ["WELCOME"] = "Привет :}",
-        ["LIB_DESC"] = "Игровой скрипт (ну типа IFRIHFROUBF)",
-        ["COMBAT"] = "Бой",
-        ["VISUALS"] = "Визуал",
-        ["MISC"] = "Разное",
-        ["APPEARANCE"] = "Внешний вид",
-        ["CONFIG"] = "Конфигурация",
-        ["LOCKED"] = "Закрытые вкладки",
-        ["SETTINGS"] = "Настройки",
-        ["UTILITIES"] = "Утилиты",
-        ["THEME_MANAGE"] = "Менеджер тем",
-        ["SAVE_CONFIG"] = "Сохранить конфигурацию",
-        ["LOAD_CONFIG"] = "Загрузить конфигурацию",
-        ["TRANSPARENCY"] = "Прозрачность окна"
-    }
+        ["ru"] = {
+            ["HAXEL_TITLE"] = "Haxel.lua",
+            ["WELCOME"] = "Привет :}",
+            ["LIB_DESC"] = "Игровой скрипт (ну типа IFRIHFROUBF)",
+            ["COMBAT"] = "Бой",
+            ["VISUALS"] = "Визуал",
+            ["MISC"] = "Разное",
+            ["APPEARANCE"] = "Внешний вид",
+            ["CONFIG"] = "Конфигурация",
+            ["LOCKED"] = "Закрытые вкладки",
+            ["SETTINGS"] = "Настройки",
+            ["UTILITIES"] = "Утилиты",
+            ["THEME_MANAGE"] = "Менеджер тем",
+            ["SAVE_CONFIG"] = "Сохранить конфигурацию",
+            ["LOAD_CONFIG"] = "Загрузить конфигурацию",
+            ["TRANSPARENCY"] = "Прозрачность окна"
+        }
   }
 })
