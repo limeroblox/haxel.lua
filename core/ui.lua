@@ -1,6 +1,7 @@
 --[[
 
-UI CONTENT, DOES NOT CONTAIN GAME CONTENT
+This is UI-related content only.
+It does not include any game-specific elements.
 
 ]]
 -- Using WindUi Cuz I like it :p
