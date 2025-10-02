@@ -1,3 +1,8 @@
+--[[
+
+UI CONTENT, DOES NOT CONTAIN GAME CONTENT
+
+]]
 -- Using WindUi Cuz I like it :p
 -- Also as they said, do not edit the main src from there, you will probably fuck it up.
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
@@ -6,9 +11,9 @@ local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footag
 local Localization = WindUI:Localization({
     Enabled = true,
     Prefix = "loc:",
-    DefaultLanguage = "en",
+    DefaultLanguage = ({["en-us"]="en",["en-gb"]="en",["es-es"]="es",["es-mx"]="es",["ru-ru"]="ru"})[(game:GetService("Players").LocalPlayer.LocaleId:lower())] or "en",
     Translations = {
-        ["en/es"] = {
+        ["en"] = {
             ["HAXEL_TITLE"] = "Haxel.lua",
             ["WELCOME"] = "Hallo :}",
             ["LIB_DESC"] = "Game Based Script (uhh IFRIHFROUBF)",
@@ -24,7 +29,24 @@ local Localization = WindUI:Localization({
             ["SAVE_CONFIG"] = "Save Configuration",
             ["LOAD_CONFIG"] = "Load Configuration",
             ["TRANSPARENCY"] = "Window Transparency"
-        }
+        },
+        ["es"] = {
+            ["HAXEL_TITLE"] = "Haxel.lua",
+            ["WELCOME"] = "Hola :}",
+            ["LIB_DESC"] = "Script basado en juegos (uhh IFRIHFROUBF)",
+            ["COMBAT"] = "Combate",
+            ["VISUALS"] = "Visuales",
+            ["MISC"] = "Misceláneo",
+            ["APPEARANCE"] = "Apariencia",
+            ["CONFIG"] = "Configuración",
+            ["LOCKED"] = "Pestañas bloqueadas",
+            ["SETTINGS"] = "Ajustes",
+            ["UTILITIES"] = "Utilidades",
+            ["THEME_MANAGE"] = "Gestor de temas",
+            ["SAVE_CONFIG"] = "Guardar configuración",
+            ["LOAD_CONFIG"] = "Cargar configuración",
+            ["TRANSPARENCY"] = "Transparencia de ventana"
+        },
         ["ru"] = {
             ["HAXEL_TITLE"] = "Haxel.lua",
             ["WELCOME"] = "Привет :}",
@@ -42,5 +64,7 @@ local Localization = WindUI:Localization({
             ["LOAD_CONFIG"] = "Загрузить конфигурацию",
             ["TRANSPARENCY"] = "Прозрачность окна"
         }
-  }
+    }
 })
+
+-- Game stuff would go here I guess :P
