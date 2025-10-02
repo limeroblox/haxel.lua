@@ -1,1 +1,7 @@
--- TO MAKE: Uses; Auto Game Support, UI Notification Usage Based On GameID/PlaceID
+--[[ 
+
+Planned Features:
+
+Implements automatic game support and UI notifications based on GameID or PlaceID.
+
+]]
