@@ -1,1 +1,2 @@
--- THIS IS USED ON SCRIPT EXECUTION, DOES NOT USE WINDUI NOTIFICATION ELEMENT
+-- This runs automatically when the script is executed.
+-- It does not use the WindUI notification component.
