@@ -17,7 +17,7 @@ NotificationLibrary:SendNotification("Info", "Game Found: " .. GameName, 3)
 if PlaceId == 123456789 then
     NotificationLibrary:SendNotification("Info", "'Script Path: haxel.lua/refs/heads/main/games/blackout_revival.lua'", 5)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/blackout_revival.lua"))()
-elseif PlaceId == 987654321 then
+elseif PlaceId == 5987922834 then
     NotificationLibrary:SendNotification("Info", "'Script Path: haxel.lua/refs/heads/main/games/trashfur_outbreak.lua'", 5)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/trashfur_outbreak.lua"))()
 elseif PlaceId == 111222333 then
