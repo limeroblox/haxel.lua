@@ -15,6 +15,7 @@ local GameName = Success and GameInfo.Name or "Unknown Game"
 
 -- Notifications
 NotificationLibrary:SendNotification("Info", "Analyzing...", 3)
+task.wait(1)
 NotificationLibrary:SendNotification("Info", "Game Found: " .. GameName .. " (" .. PlaceId .. ")", 3)
 
 -- Match PlaceId -> Script
