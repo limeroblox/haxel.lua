@@ -28,5 +28,5 @@ elseif PlaceId == 111222333 then
     NotificationLibrary:SendNotification("Info", "Script Path:\n\\haxel.lua/refs/heads/main/games/pressure.lua", 5)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/pressure.lua"))()
 else
-    NotificationLibrary:SendNotification("Error", "No supported script found for " .. GameName .. " (" .. PlaceId .. ")", 5)
+    NotificationLibrary:SendNotification("Error", "No supported script found for: " .. GameName, 5)
 end
