@@ -9,20 +9,20 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 -- Place Holders to see if this method works
 
 local Sections = {
-  FeaturesSection = Window:Section({ Title = "Features", Opened = true })
-  SettingsSection = Window:Section({ Title = "Settings", Opened = true })
-  UtilitiesSection = Window:Section({ Title = "Utilities", Opened = true })
+  FeaturesSection   = Window:Section({ Title = "Features", Opened = true })
+  SettingsSection   = Window:Section({ Title = "Settings", Opened = true })
+  UtilitiesSection  = Window:Section({ Title = "Utilities", Opened = true })
 }
 
 
-local CombatTab     = FeaturesSection:Tab({ Title = "Combat" })
-local VisualsTab    = FeaturesSection:Tab({ Title = "Visuals" })
-local MiscTab       = FeaturesSection:Tab({ Title = "Misc" })
-
-local AppearanceTab = SettingsSection:Tab({ Title = "Appearance" })
-local ConfigTab     = UtilitiesSection:Tab({ Title = "Configuration" })
-
-
+local Tabs = {
+  CombatTab     = Sections.FeaturesSection:Tab({ Title = "Combat" })
+  VisualsTab    = Sections.FeaturesSection:Tab({ Title = "Visuals" })
+  MiscTab       = Sections.FeaturesSection:Tab({ Title = "Misc" })
+  
+  AppearanceTab = SettingsSection:Tab({ Title = "Appearance" })
+  ConfigTab     = UtilitiesSection:Tab({ Title = "Configuration" })
+}
 
 -- === Managers===
 local ThemeManager = WindUI:CreateThemeManager(Window)
