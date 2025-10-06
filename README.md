@@ -8,5 +8,7 @@ It includes customizable features, configuration options.
 - 🛠️ Extensive configuration and customization
 - 🖥️ WindUI-powered interface
 
-## Coming Soon
-Game Shi
+## Supported Games:
+Transfur Outbreak
+Blackout: Revival (Zombies & Killzone)
+Pressure
