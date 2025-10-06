@@ -8,11 +8,14 @@ It does not include any game-specific elements.
 -- Also as they said, do not edit the main src from there, you will probably fuck it up.
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+-- Auto Localization
+local lang = ({["en-us"]="en",["en-gb"]="en",["es-es"]="es",["es-mx"]="es",["ru-ru"]="ru"})[game:GetService("Players").LocalPlayer.LocaleId:lower()] or "en"
+
 -- Localization:
 local Localization = WindUI:Localization({
     Enabled = true,
     Prefix = "loc:",
-    DefaultLanguage = ({["en-us"]="en",["en-gb"]="en",["es-es"]="es",["es-mx"]="es",["ru-ru"]="ru"})[(game:GetService("Players").LocalPlayer.LocaleId:lower())] or "en",
+    DefaultLanguage = lang,
     Translations = {
         ["en"] = {
             ["HAXEL_TITLE"] = "Haxel.lua",
@@ -68,10 +71,11 @@ local Localization = WindUI:Localization({
     }
 })
 
+-- Window setup
 local Window = WindUI:CreateWindow({
-    Title = Localization:Translate("loc:HAXEL_TITLE"),
-    Subtitle = Localization:Translate("loc:WELCOME"),
-    Description = Localization:Translate("loc:LIB_DESC")
+    Title = Localization.Translations[lang]["HAXEL_TITLE"],
+    Subtitle = Localization.Translations[lang]["WELCOME"],
+    Description = Localization.Translations[lang]["LIB_DESC"]
 })
 
 -- Game stuff would go here I guess :P
