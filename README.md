@@ -8,10 +8,8 @@ It includes customizable features, configuration options.
 - 🛠️ Extensive configuration and customization
 - 🖥️ WindUI-powered interface
 
-## Supported Games:
-- Transfur Outbreak
-In Dev
-- Blackout: Revival (Zombies & Killzone)
-In Dev
-- Pressure
-In Dev
+## Supported Games
+
+- **Transfur Outbreak** – In Dev  
+- **Blackout: Revival (Zombies & Killzone)** – In Dev  
+- **Pressure** – In Dev
