@@ -10,6 +10,11 @@ It includes customizable features, configuration options.
 
 ## Supported Games
 
-- **Transfur Outbreak** – In Dev  
-- **Blackout: Revival (Zombies & Killzone)** – In Dev  
-- **Pressure** – In Dev
+- **Transfur Outbreak**  
+  *In Dev*
+
+- **Blackout: Revival (Zombies & Killzone)**  
+  *In Dev*
+
+- **Pressure**  
+  *In Dev*
