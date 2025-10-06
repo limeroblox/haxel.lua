@@ -9,13 +9,18 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 -- Place Holders to see if this method works
 
 
-local MainSection = Window:Section({ Title = "Features", Opened = true })
 
-local CombatTab     = MainSection:Tab({ Title = "Combat" })
-local VisualsTab    = MainSection:Tab({ Title = "Visuals" })
-local MiscTab       = MainSection:Tab({ Title = "Misc" })
-local AppearanceTab = MainSection:Tab({ Title = "Appearance" })
-local ConfigTab     = MainSection:Tab({ Title = "Configuration" })
+local FeaturesSection = Window:Section({ Title = "Features", Opened = true })
+local SettingsSection = Window:Section({ Title = "Settings", Opened = true })
+local UtilitiesSection = Window:Section({ Title = "Utilities", Opened = true })
+
+
+local CombatTab     = FeaturesSection:Tab({ Title = "Combat" })
+local VisualsTab    = FeaturesSection:Tab({ Title = "Visuals" })
+local MiscTab       = FeaturesSection:Tab({ Title = "Misc" })
+
+local AppearanceTab = SettingsSection:Tab({ Title = "Appearance" })
+local ConfigTab     = UtilitiesSection:Tab({ Title = "Configuration" })
 
 
 
