@@ -68,4 +68,10 @@ local Localization = WindUI:Localization({
     }
 })
 
+local Window = WindUI:CreateWindow({
+    Title = Localization:Translate("loc:HAXEL_TITLE"),
+    Subtitle = Localization:Translate("loc:WELCOME"),
+    Description = Localization:Translate("loc:LIB_DESC")
+})
+
 -- Game stuff would go here I guess :P
