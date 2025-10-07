@@ -16,6 +16,7 @@ local Localization = HaxelUI:Localization({
     Translations = {
         ["en"] = {
             ["TITLE"]           = "Haxel.lua",
+            ["ICON"]            = 'https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp',
             ["AUTHOR"]          = "@haxel.py on discord",
             ["DESC"]            = "Multi-Game Script :D",
             ["SETTINGS"]        = "Settings",
@@ -32,6 +33,7 @@ local Localization = HaxelUI:Localization({
         },
         ["ru"] = {
             ["TITLE"]           = "Haxel.lua",
+            ["ICON"]            = 'https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp',
             ["AUTHOR"]          = "@haxel.py в Discord",
             ["DESC"]            = "Мультигеймовый скрипт :D",
             ["SETTINGS"]        = "Настройки",
@@ -53,7 +55,7 @@ local Localization = HaxelUI:Localization({
 -- Window setup
 local Window = HaxelUI:CreateWindow({
     Title = "loc:TITLE",
-    Icon = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
+    Icon = "loc:ICON",
     Author = "loc:AUTHOR",
     Description = "loc:DESC",
     Folder = "Haxel.lua",
