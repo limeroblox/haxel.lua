@@ -9,24 +9,25 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 -- Place Holders to see if this method works
 
 local Sections = {
-  FeaturesSection   = Window:Section({ Title = "Features", Opened = true })
-  SettingsSection   = Window:Section({ Title = "Settings", Opened = true })
-  UtilitiesSection  = Window:Section({ Title = "Utilities", Opened = true })
+    Main = Window:Section({ Title = "loc:FEATURES", Opened = true }),
+    Settings = Window:Section({ Title = "loc:SETTINGS", Opened = true }),
+    Utilities = Window:Section({ Title = "loc:UTILITIES", Opened = true })
 }
 
 
 local Tabs = {
-  CombatTab     = Sections.FeaturesSection:Tab({ Title = "Combat" })
-  VisualsTab    = Sections.FeaturesSection:Tab({ Title = "Visuals" })
-  MiscTab       = Sections.FeaturesSection:Tab({ Title = "Misc" })
-  
-  AppearanceTab = SettingsSection:Tab({ Title = "Appearance" })
-  ConfigTab     = UtilitiesSection:Tab({ Title = "Configuration" })
+    Elements = Sections.Main:Tab({ Title = "loc:UI_ELEMENTS", Icon = "layout-grid", Desc = "UI Elements Example" }),
+    Appearance = Sections.Settings:Tab({ Title = "loc:APPEARANCE", Icon = "brush" }),
+    Config = Sections.Utilities:Tab({ Title = "loc:CONFIGURATION", Icon = "settings" }),
+    LockedTab1 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
+    LockedTab2 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
+    LockedTab3 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
+    LockedTab4 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
+    LockedTab5 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
 }
 
--- === Managers===
-local ThemeManager = 
-local ConfigManager = WindUI:CreateConfigManager(Window)
+
+
 ThemeManager:SetFolder("Haxel/Themes")
 ConfigManager:SetFolder("Haxel/Configs")
 
