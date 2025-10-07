@@ -65,8 +65,12 @@ local Window = HaxelUI:CreateWindow({
 })
 
 Window:Tag({
-    Title = "v0.1",
-    Color = Color3.fromRGB(255, 255, 255) 
+    Title = "DEV - v0.1",
+    Color = ColorSequence.new(
+        Color3.fromRGB(0, 0, 255), 
+        Color3.fromRGB(255, 255, 255)
+    )
 })
+
 
 -- Game stuff would go here I guess :P
