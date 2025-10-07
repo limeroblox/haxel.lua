@@ -25,7 +25,7 @@ local Tabs = {
 }
 
 -- === Managers===
-local ThemeManager = WindUI:CreateThemeManager(Window)
+local ThemeManager = 
 local ConfigManager = WindUI:CreateConfigManager(Window)
 ThemeManager:SetFolder("Haxel/Themes")
 ConfigManager:SetFolder("Haxel/Configs")
