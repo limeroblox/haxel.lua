@@ -76,12 +76,15 @@ local tag = Window:Tag({
     }),
 })
 
--- define gradient color cycles
+-- define gradient color cycles with visually appealing pairs
 local colorCycles = {
-    { "#007BFF", "#FFFFFF" }, -- blue to white
+    { "#007BFF", "#30FF6A" }, -- blue to green
     { "#30FF6A", "#E7FF2F" }, -- green to yellow
+    { "#E7FF2F", "#FF0F7B" }, -- yellow to pink
     { "#FF0F7B", "#F89B29" }, -- pink to orange
+    { "#F89B29", "#8A2BE2" }, -- orange to purple
     { "#8A2BE2", "#00FFFF" }, -- purple to cyan
+    { "#00FFFF", "#007BFF" }, -- cyan to blue (loop back)
 }
 
 -- dynamic gradient + rotation tween
@@ -91,17 +94,26 @@ local function AnimateGradient(startHex, endHex, duration)
     local fade = Instance.new("NumberValue")
     fade.Value = 0
 
-    local tween = TweenService:Create(
-        fade,
-        TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-        { Value = 1 }
+    -- create a smooth tween for color fading
+    local tweenInfo = TweenInfo.new(
+        duration,
+        Enum.EasingStyle.Quad, -- smoother easing for color transitions
+        Enum.EasingDirection.InOut,
+        0, -- no repeat
+        true -- reverse for a back-and-forth effect
+    )
+    local tween = TweenService:Create(fade, tweenInfo, { Value = 1 })
+
+    -- create a continuous rotation tween
+    local rotationValue = Instance.new("NumberValue")
+    rotationValue.Value = math.random(0, 360)
+    local rotationTween = TweenService:Create(
+        rotationValue,
+        TweenInfo.new(duration * 2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+        { Value = rotationValue.Value + 360 }
     )
 
-    tween:Play()
-
-    -- pick a random rotation for some motion
-    local rotation = math.random(0, 360)
-
+    -- update gradient on value change
     fade:GetPropertyChangedSignal("Value"):Connect(function()
         local mixed0 = startColor:Lerp(endColor, fade.Value)
         local mixed1 = endColor:Lerp(startColor, fade.Value)
@@ -110,24 +122,30 @@ local function AnimateGradient(startHex, endHex, duration)
             ["0"]   = { Color = mixed0, Transparency = 0 },
             ["100"] = { Color = mixed1, Transparency = 0 },
         }, {
-            Rotation = rotation,
+            Rotation = rotationValue.Value,
         }))
     end)
 
+    -- start both tweens
+    tween:Play()
+    rotationTween:Play()
+
+    -- cleanup
     tween.Completed:Connect(function()
         fade:Destroy()
+        rotationValue:Destroy()
     end)
 end
 
--- continuous cycle
+-- continuous cycle with varied timing
 task.spawn(function()
     while true do
         for _, pair in ipairs(colorCycles) do
-            AnimateGradient(pair[1], pair[2], 3 + math.random())
-            task.wait(3.5)
+            local duration = 2 + math.random() * 2 -- random duration between 2 and 4 seconds
+            AnimateGradient(pair[1], pair[2], duration)
+            task.wait(duration + 0.5) -- slight pause between cycles
         end
     end
 end)
-
 
 -- Game stuff would go here I guess :P
