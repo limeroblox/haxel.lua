@@ -64,13 +64,31 @@ local Window = HaxelUI:CreateWindow({
     },
 })
 
-Window:Tag({
-    Title = "DEV - v0.1",
+local tag = Window:Tag({
+    Title = "v0.1",
     Color = ColorSequence.new(
-        Color3.fromRGB(0, 0, 255), 
-        Color3.fromRGB(255, 255, 255)
+        Color3.fromHex("#007BFF"),
+        Color3.fromHex("#FFFFFF")
     )
 })
+
+-- Add a gradient animator if the tag supports it
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new(
+    Color3.fromHex("#007BFF"),
+    Color3.fromHex("#FFFFFF")
+)
+gradient.Parent = tag
+
+-- Tween the gradient to create a fading/moving effect
+local TweenService = game:GetService("TweenService")
+
+while true do
+    TweenService:Create(gradient, TweenInfo.new(3, Enum.EasingStyle.Linear), {Offset = Vector2.new(1, 0)}):Play()
+    task.wait(3)
+    TweenService:Create(gradient, TweenInfo.new(3, Enum.EasingStyle.Linear), {Offset = Vector2.new(-1, 0)}):Play()
+    task.wait(3)
+end
 
 
 -- Game stuff would go here I guess :P
