@@ -64,31 +64,52 @@ local Window = HaxelUI:CreateWindow({
     },
 })
 
-local tag = Window:Tag({
-    Title = "v0.1",
-    Color = ColorSequence.new(
-        Color3.fromHex("#007BFF"),
-        Color3.fromHex("#FFFFFF")
-    )
-})
-
--- Add a gradient animator if the tag supports it
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new(
-    Color3.fromHex("#007BFF"),
-    Color3.fromHex("#FFFFFF")
-)
-gradient.Parent = tag
-
--- Tween the gradient to create a fading/moving effect
 local TweenService = game:GetService("TweenService")
 
-while true do
-    TweenService:Create(gradient, TweenInfo.new(3, Enum.EasingStyle.Linear), {Offset = Vector2.new(1, 0)}):Play()
-    task.wait(3)
-    TweenService:Create(gradient, TweenInfo.new(3, Enum.EasingStyle.Linear), {Offset = Vector2.new(-1, 0)}):Play()
-    task.wait(3)
+-- initial gradient
+local tag = Window:Tag({
+    Title = "DEV - v0.1",
+    Color = HaxelUI:Gradient({
+        ["0"]   = { Color = Color3.fromHex("#007BFF"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#FFFFFF"), Transparency = 0 },
+    }, {
+        Rotation = 45,
+    }),
+})
+
+-- function to tween between two gradients
+local function TweenGradient(startHex, endHex, duration)
+    local startColor = Color3.fromHex(startHex)
+    local endColor = Color3.fromHex(endHex)
+
+    local fade = Instance.new("NumberValue")
+    fade.Value = 0
+
+    local tween = TweenService:Create(fade, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Value = 1})
+    tween:Play()
+
+    tween.Completed:Connect(function()
+        fade:Destroy()
+    end)
+
+    fade:GetPropertyChangedSignal("Value"):Connect(function()
+        local mix = startColor:Lerp(endColor, fade.Value)
+        tag:SetColor(HaxelUI:Gradient({
+            ["0"]   = { Color = mix, Transparency = 0 },
+            ["100"] = { Color = Color3.fromHex("#FFFFFF"), Transparency = 0 },
+        }, { Rotation = 45 }))
+    end)
 end
+
+-- loop the fade
+task.spawn(function()
+    while true do
+        TweenGradient("#007BFF", "#FFFFFF", 3)
+        task.wait(3)
+        TweenGradient("#FFFFFF", "#007BFF", 3)
+        task.wait(3)
+    end
+end)
 
 
 -- Game stuff would go here I guess :P
