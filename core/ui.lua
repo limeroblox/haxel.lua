@@ -65,6 +65,7 @@ local Window = HaxelUI:CreateWindow({
 })
 
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local tag = Window:Tag({
     Title = "DEV - v0.1",
@@ -76,7 +77,6 @@ local tag = Window:Tag({
     }),
 })
 
--- define color sequence (flattened from original colorCycles to individual colors)
 local colorSequence = {
     "#007BFF", -- blue
     "#30FF6A", -- green
@@ -85,87 +85,48 @@ local colorSequence = {
     "#F89B29", -- orange
     "#8A2BE2", -- purple
     "#00FFFF", -- cyan
-    "#007BFF", -- blue (loop back)
+    "#007BFF", -- loop back to blue
 }
 
--- function to get interpolated colors based on progress
+-- get interpolated colors
 local function GetInterpolatedColors(progress)
-    local totalSegments = #colorSequence - 1 -- number of transitions
+    local totalSegments = #colorSequence - 1
     local scaledProgress = progress * totalSegments
-    local segmentIndex = math.floor(scaledProgress) + 1
-    local segmentProgress = scaledProgress % 1
+    local index = math.floor(scaledProgress) + 1
+    local t = scaledProgress % 1
 
-    -- ensure we don't go out of bounds
-    if segmentIndex >= #colorSequence then
-        segmentIndex = #colorSequence - 1
-        segmentProgress = 1
+    if index >= #colorSequence then
+        index = #colorSequence - 1
+        t = 1
     end
 
-    local startColor = Color3.fromHex(colorSequence[segmentIndex])
-    local endColor = Color3.fromHex(colorSequence[segmentIndex + 1])
-
-    -- interpolate between the two colors for both gradient stops
-    local mixed0 = startColor:Lerp(endColor, segmentProgress)
-    local mixed1 = endColor:Lerp(startColor, segmentProgress)
-
-    return mixed0, mixed1
+    local startColor = Color3.fromHex(colorSequence[index])
+    local endColor = Color3.fromHex(colorSequence[index + 1])
+    -- both stops move forward for smooth vibe
+    return startColor:Lerp(endColor, t), startColor:Lerp(endColor, t)
 end
 
--- dynamic gradient + rotation tween
+-- animate gradient & rotation continuously
 local function AnimateGradient()
-    local progress = Instance.new("NumberValue")
-    progress.Value = 0
+    local progress = 0
+    local rotation = 0
+    local cycleDuration = 16 -- seconds per full color cycle
+    local rotationDuration = 14 -- seconds per full rotation
 
-    -- create a smooth tween for color fading
-    local tweenInfo = TweenInfo.new(
-        16, -- total duration for one full cycle (2 seconds per color transition)
-        Enum.EasingStyle.Linear, -- linear for consistent flow
-        Enum.EasingDirection.In,
-        -1, -- infinite repeat
-        false -- no reverse for continuous flow
-    )
-    local tween = TweenService:Create(progress, tweenInfo, { Value = 1 })
+    RunService.RenderStepped:Connect(function(dt)
+        progress = (progress + dt / cycleDuration) % 1
+        rotation = (rotation + dt / rotationDuration * 360) % 360
 
-    -- create a continuous rotation tween
-    local rotationValue = Instance.new("NumberValue")
-    rotationValue.Value = 0
-    local rotationTween = TweenService:Create(
-        rotationValue,
-        TweenInfo.new(14, Enum.EasingStyle.Sine, Enum.EasingDirection.In, -1, false),
-        { Value = 360 }
-    )
-
-    -- update gradient on progress change
-    progress:GetPropertyChangedSignal("Value"):Connect(function()
-        local color0, color1 = GetInterpolatedColors(progress.Value)
+        local c0, c1 = GetInterpolatedColors(progress)
         tag:SetColor(HaxelUI:Gradient({
-            ["0"]   = { Color = color0, Transparency = 0 },
-            ["100"] = { Color = color1, Transparency = 0 },
+            ["0"]   = { Color = c0, Transparency = 0 },
+            ["100"] = { Color = c1, Transparency = 0 },
         }, {
-            Rotation = rotationValue.Value,
+            Rotation = rotation,
         }))
     end)
-
-    -- start both tweens
-    tween:Play()
-    rotationTween:Play()
-
-    -- cleanup function
-    return function()
-        tween:Cancel()
-        rotationTween:Cancel()
-        progress:Destroy()
-        rotationValue:Destroy()
-    end
 end
 
--- start the continuous animation
-task.spawn(function()
-    local cleanup = AnimateGradient()
-    -- keep the task running indefinitely
-    while true do
-        task.wait(1)
-    end
-end)
+AnimateGradient()
 
 -- Game stuff would go here I guess :P
