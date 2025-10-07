@@ -76,43 +76,37 @@ local tag = Window:Tag({
     }),
 })
 
--- define gradient color cycles with visually appealing pairs
-local colorCycles = {
-    { "#007BFF", "#30FF6A" }, -- blue to green
-    { "#30FF6A", "#E7FF2F" }, -- green to yellow
-    { "#E7FF2F", "#FF0F7B" }, -- yellow to pink
-    { "#FF0F7B", "#F89B29" }, -- pink to orange
-    { "#F89B29", "#8A2BE2" }, -- orange to purple
-    { "#8A2BE2", "#00FFFF" }, -- purple to cyan
-    { "#00FFFF", "#007BFF" }, -- cyan to blue (loop back)
+-- define color sequence (flattened to individual colors for continuous flow)
+local colorSequence = {
+    "#007BFF", -- blue
+    "#30FF6A", -- green
+    "#E7FF2F", -- yellow
+    "#FF0F7B", -- pink
+    "#F89B29", -- orange
+    "#8A2BE2", -- purple
+    "#00FFFF", -- cyan
+    "#007BFF", -- blue (loop back)
 }
 
--- function to get interpolated color pair based on progress
+-- function to get interpolated colors based on progress
 local function GetInterpolatedColors(progress)
-    local totalPairs = #colorCycles
-    -- scale progress to the number of color pairs
-    local scaledProgress = progress * totalPairs
-    local pairIndex = math.floor(scaledProgress) % totalPairs + 1
-    local pairProgress = scaledProgress % 1
+    local totalColors = #colorSequence - 1 -- subtract 1 since last color loops back
+    local scaledProgress = progress * totalColors
+    local colorIndex = math.floor(scaledProgress) + 1
+    local interpProgress = scaledProgress % 1
 
-    -- get current and next color pair for smooth looping
-    local currentPair = colorCycles[pairIndex]
-    local nextPairIndex = pairIndex % totalPairs + 1
-    local nextPair = colorCycles[nextPairIndex]
-
-    -- interpolate between current pair's start and end colors
-    local startColor = Color3.fromHex(currentPair[1])
-    local endColor = Color3.fromHex(currentPair[2])
-    local mixed0 = startColor:Lerp(endColor, pairProgress)
-    local mixed1 = endColor:Lerp(startColor, pairProgress)
-
-    -- if approaching the next pair, start blending with its start color
-    if pairProgress > 0.8 then
-        local blendProgress = (pairProgress - 0.8) / 0.2 -- blend over the last 20% of the transition
-        local nextStartColor = Color3.fromHex(nextPair[1])
-        mixed0 = mixed0:Lerp(nextStartColor, blendProgress)
-        mixed1 = mixed1:Lerp(nextStartColor, blendProgress)
+    -- ensure we don't go out of bounds
+    if colorIndex >= #colorSequence then
+        colorIndex = #colorSequence - 1
+        interpProgress = 1
     end
+
+    local startColor = Color3.fromHex(colorSequence[colorIndex])
+    local endColor = Color3.fromHex(colorSequence[colorIndex + 1])
+
+    -- interpolate between the two colors
+    local mixed0 = startColor:Lerp(endColor, interpProgress)
+    local mixed1 = endColor:Lerp(startColor, interpProgress)
 
     return mixed0, mixed1
 end
@@ -124,8 +118,8 @@ local function AnimateGradient()
 
     -- create a smooth tween for color fading
     local tweenInfo = TweenInfo.new(
-        14, -- total duration for one full cycle through all colors (2 seconds per pair)
-        Enum.EasingStyle.Linear, -- linear easing for consistent color flow
+        14, -- total duration for one full cycle (2 seconds per color transition)
+        Enum.EasingStyle.Linear, -- linear for consistent flow
         Enum.EasingDirection.In,
         -1, -- infinite repeat
         false -- no reverse for continuous flow
