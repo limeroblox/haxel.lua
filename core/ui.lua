@@ -59,7 +59,7 @@ local Window = HaxelUI:CreateWindow({
     Folder                      = "Haxel.lua",
     User = {
         Enabled = true
-    }
+    },
 
 })
 
