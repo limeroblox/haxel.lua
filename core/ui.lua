@@ -66,7 +66,6 @@ local Window = HaxelUI:CreateWindow({
 
 local TweenService = game:GetService("TweenService")
 
--- initial gradient
 local tag = Window:Tag({
     Title = "DEV - v0.1",
     Color = HaxelUI:Gradient({
@@ -77,37 +76,56 @@ local tag = Window:Tag({
     }),
 })
 
--- function to tween between two gradients
-local function TweenGradient(startHex, endHex, duration)
+-- define gradient color cycles
+local colorCycles = {
+    { "#007BFF", "#FFFFFF" }, -- blue to white
+    { "#30FF6A", "#E7FF2F" }, -- green to yellow
+    { "#FF0F7B", "#F89B29" }, -- pink to orange
+    { "#8A2BE2", "#00FFFF" }, -- purple to cyan
+}
+
+-- dynamic gradient + rotation tween
+local function AnimateGradient(startHex, endHex, duration)
     local startColor = Color3.fromHex(startHex)
     local endColor = Color3.fromHex(endHex)
-
     local fade = Instance.new("NumberValue")
     fade.Value = 0
 
-    local tween = TweenService:Create(fade, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Value = 1})
+    local tween = TweenService:Create(
+        fade,
+        TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+        { Value = 1 }
+    )
+
     tween:Play()
+
+    -- pick a random rotation for some motion
+    local rotation = math.random(0, 360)
+
+    fade:GetPropertyChangedSignal("Value"):Connect(function()
+        local mixed0 = startColor:Lerp(endColor, fade.Value)
+        local mixed1 = endColor:Lerp(startColor, fade.Value)
+
+        tag:SetColor(HaxelUI:Gradient({
+            ["0"]   = { Color = mixed0, Transparency = 0 },
+            ["100"] = { Color = mixed1, Transparency = 0 },
+        }, {
+            Rotation = rotation,
+        }))
+    end)
 
     tween.Completed:Connect(function()
         fade:Destroy()
     end)
-
-    fade:GetPropertyChangedSignal("Value"):Connect(function()
-        local mix = startColor:Lerp(endColor, fade.Value)
-        tag:SetColor(HaxelUI:Gradient({
-            ["0"]   = { Color = mix, Transparency = 0 },
-            ["100"] = { Color = Color3.fromHex("#FFFFFF"), Transparency = 0 },
-        }, { Rotation = 45 }))
-    end)
 end
 
--- loop the fade
+-- continuous cycle
 task.spawn(function()
     while true do
-        TweenGradient("#007BFF", "#FFFFFF", 3)
-        task.wait(3)
-        TweenGradient("#FFFFFF", "#007BFF", 3)
-        task.wait(3)
+        for _, pair in ipairs(colorCycles) do
+            AnimateGradient(pair[1], pair[2], 3 + math.random())
+            task.wait(3.5)
+        end
     end
 end)
 
