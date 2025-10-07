@@ -90,22 +90,29 @@ local colorCycles = {
 -- function to get interpolated color pair based on progress
 local function GetInterpolatedColors(progress)
     local totalPairs = #colorCycles
-    local pairIndex = math.floor(progress * totalPairs) + 1
-    local pairProgress = (progress * totalPairs) % 1
+    -- scale progress to the number of color pairs
+    local scaledProgress = progress * totalPairs
+    local pairIndex = math.floor(scaledProgress) % totalPairs + 1
+    local pairProgress = scaledProgress % 1
 
-    -- handle wrap-around for seamless looping
-    if pairIndex > totalPairs then
-        pairIndex = 1
-    end
+    -- get current and next color pair for smooth looping
+    local currentPair = colorCycles[pairIndex]
+    local nextPairIndex = pairIndex % totalPairs + 1
+    local nextPair = colorCycles[nextPairIndex]
 
-    local startHex = colorCycles[pairIndex][1]
-    local endHex = colorCycles[pairIndex][2]
-    local startColor = Color3.fromHex(startHex)
-    local endColor = Color3.fromHex(endHex)
-
-    -- interpolate between the start and end colors of the current pair
+    -- interpolate between current pair's start and end colors
+    local startColor = Color3.fromHex(currentPair[1])
+    local endColor = Color3.fromHex(currentPair[2])
     local mixed0 = startColor:Lerp(endColor, pairProgress)
     local mixed1 = endColor:Lerp(startColor, pairProgress)
+
+    -- if approaching the next pair, start blending with its start color
+    if pairProgress > 0.8 then
+        local blendProgress = (pairProgress - 0.8) / 0.2 -- blend over the last 20% of the transition
+        local nextStartColor = Color3.fromHex(nextPair[1])
+        mixed0 = mixed0:Lerp(nextStartColor, blendProgress)
+        mixed1 = mixed1:Lerp(nextStartColor, blendProgress)
+    end
 
     return mixed0, mixed1
 end
@@ -117,11 +124,11 @@ local function AnimateGradient()
 
     -- create a smooth tween for color fading
     local tweenInfo = TweenInfo.new(
-        20, -- total duration for one full cycle through all colors
-        Enum.EasingStyle.Quad, -- smooth easing
-        Enum.EasingDirection.InOut,
+        14, -- total duration for one full cycle through all colors (2 seconds per pair)
+        Enum.EasingStyle.Linear, -- linear easing for consistent color flow
+        Enum.EasingDirection.In,
         -1, -- infinite repeat
-        true -- reverse for back-and-forth effect
+        false -- no reverse for continuous flow
     )
     local tween = TweenService:Create(progress, tweenInfo, { Value = 1 })
 
@@ -130,7 +137,7 @@ local function AnimateGradient()
     rotationValue.Value = 0
     local rotationTween = TweenService:Create(
         rotationValue,
-        TweenInfo.new(10, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        TweenInfo.new(12, Enum.EasingStyle.Sine, Enum.EasingDirection.In, -1, false),
         { Value = 360 }
     )
 
@@ -149,7 +156,7 @@ local function AnimateGradient()
     tween:Play()
     rotationTween:Play()
 
-    -- cleanup (optional, since tweens are infinite)
+    -- cleanup function
     return function()
         tween:Cancel()
         rotationTween:Cancel()
