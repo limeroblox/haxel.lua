@@ -11,7 +11,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 local Sections = {
     Main = Window:Section({ Title = "loc:FEATURES", Opened = true }),
     Settings = Window:Section({ Title = "loc:SETTINGS", Opened = true }),
-    Utilities = Window:Section({ Title = "loc:UTILITIES", Opened = true })
+    Utilities = Window:Section({ Title = "loc:UTILITIES", Opened = true }),
 }
 
 
