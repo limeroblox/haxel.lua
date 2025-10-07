@@ -69,9 +69,4 @@ Window:Tag({
     Color = Color3.fromRGB(255, 255, 255) 
 })
 
-Window:Tag({
-    Title = "Dev Build",
-    Color = Color3.fromRGB(0, 4, 255) 
-})
-
 -- Game stuff would go here I guess :P
