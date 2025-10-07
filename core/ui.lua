@@ -16,7 +16,7 @@ local Localization = HaxelUI:Localization({
     Translations = {
         ["en"] = {
             ["TITLE"]           = "Haxel.lua",
-            ["ICON"]            = 'https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp',
+            ["ICON"]            = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
             ["AUTHOR"]          = "@haxel.py",
             ["DESC"]            = "Multi-Game Script :D",
             ["SETTINGS"]        = "Settings",
@@ -33,7 +33,7 @@ local Localization = HaxelUI:Localization({
         },
         ["ru"] = {
             ["TITLE"]           = "Haxel.lua",
-            ["ICON"]            = 'https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp',
+            ["ICON"]            = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
             ["AUTHOR"]          = "@haxel.py",
             ["DESC"]            = "Мультигеймовый скрипт :D",
             ["SETTINGS"]        = "Настройки",
@@ -70,22 +70,22 @@ local RunService = game:GetService("RunService")
 local tag = Window:Tag({
     Title = "DEV - v0.1",
     Color = HaxelUI:Gradient({
-        ["0"]   = { Color = Color3.fromHex("#007BFF"), Transparency = 0 },
-        ["100"] = { Color = Color3.fromHex("#30FF6A"), Transparency = 0 },
+        ["0"]   = { Color = Color3.fromHex("#FF0000"), Transparency = 0 }, -- red
+        ["100"] = { Color = Color3.fromHex("#00FF00"), Transparency = 0 }, -- green
     }, {
         Rotation = 45,
     }),
 })
 
 local colorSequence = {
-    "#007BFF", -- blue
-    "#30FF6A", -- green
-    "#E7FF2F", -- yellow
-    "#FF0F7B", -- pink
-    "#F89B29", -- orange
-    "#8A2BE2", -- purple
-    "#00FFFF", -- cyan
-    "#007BFF", -- loop back to blue
+    "#FF0000", -- bright red
+    "#00FF00", -- bright green
+    "#FFFF00", -- bright yellow
+    "#00FFFF", -- bright cyan
+    "#FF00FF", -- bright magenta
+    "#FFA500", -- bright orange
+    "#007BFF", -- bright blue
+    "#FF0000", -- loop back to red
 }
 
 -- get interpolated colors
