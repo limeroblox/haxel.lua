@@ -56,7 +56,7 @@ local Window = HaxelUI:CreateWindow({
     Icon                        = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
     Author                      = "loc:AUTHOR",
     Description                 = "loc:DESC",
-    Folder                      = "Haxel.lua"
+    Folder                      = "Haxel.lua",
     User = {
         Enabled = true
     }
