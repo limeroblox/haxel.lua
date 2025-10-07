@@ -76,7 +76,7 @@ local tag = Window:Tag({
     }),
 })
 
--- define color sequence (flattened to individual colors for continuous flow)
+-- define color sequence (flattened from original colorCycles to individual colors)
 local colorSequence = {
     "#007BFF", -- blue
     "#30FF6A", -- green
@@ -90,23 +90,23 @@ local colorSequence = {
 
 -- function to get interpolated colors based on progress
 local function GetInterpolatedColors(progress)
-    local totalColors = #colorSequence - 1 -- subtract 1 since last color loops back
-    local scaledProgress = progress * totalColors
-    local colorIndex = math.floor(scaledProgress) + 1
-    local interpProgress = scaledProgress % 1
+    local totalSegments = #colorSequence - 1 -- number of transitions
+    local scaledProgress = progress * totalSegments
+    local segmentIndex = math.floor(scaledProgress) + 1
+    local segmentProgress = scaledProgress % 1
 
     -- ensure we don't go out of bounds
-    if colorIndex >= #colorSequence then
-        colorIndex = #colorSequence - 1
-        interpProgress = 1
+    if segmentIndex >= #colorSequence then
+        segmentIndex = #colorSequence - 1
+        segmentProgress = 1
     end
 
-    local startColor = Color3.fromHex(colorSequence[colorIndex])
-    local endColor = Color3.fromHex(colorSequence[colorIndex + 1])
+    local startColor = Color3.fromHex(colorSequence[segmentIndex])
+    local endColor = Color3.fromHex(colorSequence[segmentIndex + 1])
 
-    -- interpolate between the two colors
-    local mixed0 = startColor:Lerp(endColor, interpProgress)
-    local mixed1 = endColor:Lerp(startColor, interpProgress)
+    -- interpolate between the two colors for both gradient stops
+    local mixed0 = startColor:Lerp(endColor, segmentProgress)
+    local mixed1 = endColor:Lerp(startColor, segmentProgress)
 
     return mixed0, mixed1
 end
@@ -118,7 +118,7 @@ local function AnimateGradient()
 
     -- create a smooth tween for color fading
     local tweenInfo = TweenInfo.new(
-        14, -- total duration for one full cycle (2 seconds per color transition)
+        16, -- total duration for one full cycle (2 seconds per color transition)
         Enum.EasingStyle.Linear, -- linear for consistent flow
         Enum.EasingDirection.In,
         -1, -- infinite repeat
@@ -131,7 +131,7 @@ local function AnimateGradient()
     rotationValue.Value = 0
     local rotationTween = TweenService:Create(
         rotationValue,
-        TweenInfo.new(12, Enum.EasingStyle.Sine, Enum.EasingDirection.In, -1, false),
+        TweenInfo.new(14, Enum.EasingStyle.Sine, Enum.EasingDirection.In, -1, false),
         { Value = 360 }
     )
 
