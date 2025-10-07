@@ -68,7 +68,7 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
 local tag = Window:Tag({
-    Title = "DEV - v0.1",
+    Title = "DEV",
     Color = HaxelUI:Gradient({
         ["0"]   = { Color = Color3.fromHex("#FF0000"), Transparency = 0 }, -- red
         ["100"] = { Color = Color3.fromHex("#00FF00"), Transparency = 0 }, -- green
