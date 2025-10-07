@@ -25,10 +25,3 @@ local Tabs = {
     LockedTab4 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
     LockedTab5 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
 }
-
-
-
-ThemeManager:SetFolder("Haxel/Themes")
-ConfigManager:SetFolder("Haxel/Configs")
-
-ConfigManager:Load()
