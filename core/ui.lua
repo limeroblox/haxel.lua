@@ -70,7 +70,7 @@ local tag = Window:Tag({
     Title = "DEV - v0.1",
     Color = HaxelUI:Gradient({
         ["0"]   = { Color = Color3.fromHex("#007BFF"), Transparency = 0 },
-        ["100"] = { Color = Color3.fromHex("#FFFFFF"), Transparency = 0 },
+        ["100"] = { Color = Color3.fromHex("#30FF6A"), Transparency = 0 },
     }, {
         Rotation = 45,
     }),
@@ -87,40 +87,59 @@ local colorCycles = {
     { "#00FFFF", "#007BFF" }, -- cyan to blue (loop back)
 }
 
--- dynamic gradient + rotation tween
-local function AnimateGradient(startHex, endHex, duration)
+-- function to get interpolated color pair based on progress
+local function GetInterpolatedColors(progress)
+    local totalPairs = #colorCycles
+    local pairIndex = math.floor(progress * totalPairs) + 1
+    local pairProgress = (progress * totalPairs) % 1
+
+    -- handle wrap-around for seamless looping
+    if pairIndex > totalPairs then
+        pairIndex = 1
+    end
+
+    local startHex = colorCycles[pairIndex][1]
+    local endHex = colorCycles[pairIndex][2]
     local startColor = Color3.fromHex(startHex)
     local endColor = Color3.fromHex(endHex)
-    local fade = Instance.new("NumberValue")
-    fade.Value = 0
+
+    -- interpolate between the start and end colors of the current pair
+    local mixed0 = startColor:Lerp(endColor, pairProgress)
+    local mixed1 = endColor:Lerp(startColor, pairProgress)
+
+    return mixed0, mixed1
+end
+
+-- dynamic gradient + rotation tween
+local function AnimateGradient()
+    local progress = Instance.new("NumberValue")
+    progress.Value = 0
 
     -- create a smooth tween for color fading
     local tweenInfo = TweenInfo.new(
-        duration,
-        Enum.EasingStyle.Quad, -- smoother easing for color transitions
+        20, -- total duration for one full cycle through all colors
+        Enum.EasingStyle.Quad, -- smooth easing
         Enum.EasingDirection.InOut,
-        0, -- no repeat
-        true -- reverse for a back-and-forth effect
+        -1, -- infinite repeat
+        true -- reverse for back-and-forth effect
     )
-    local tween = TweenService:Create(fade, tweenInfo, { Value = 1 })
+    local tween = TweenService:Create(progress, tweenInfo, { Value = 1 })
 
     -- create a continuous rotation tween
     local rotationValue = Instance.new("NumberValue")
-    rotationValue.Value = math.random(0, 360)
+    rotationValue.Value = 0
     local rotationTween = TweenService:Create(
         rotationValue,
-        TweenInfo.new(duration * 2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-        { Value = rotationValue.Value + 360 }
+        TweenInfo.new(10, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        { Value = 360 }
     )
 
-    -- update gradient on value change
-    fade:GetPropertyChangedSignal("Value"):Connect(function()
-        local mixed0 = startColor:Lerp(endColor, fade.Value)
-        local mixed1 = endColor:Lerp(startColor, fade.Value)
-
+    -- update gradient on progress change
+    progress:GetPropertyChangedSignal("Value"):Connect(function()
+        local color0, color1 = GetInterpolatedColors(progress.Value)
         tag:SetColor(HaxelUI:Gradient({
-            ["0"]   = { Color = mixed0, Transparency = 0 },
-            ["100"] = { Color = mixed1, Transparency = 0 },
+            ["0"]   = { Color = color0, Transparency = 0 },
+            ["100"] = { Color = color1, Transparency = 0 },
         }, {
             Rotation = rotationValue.Value,
         }))
@@ -130,21 +149,21 @@ local function AnimateGradient(startHex, endHex, duration)
     tween:Play()
     rotationTween:Play()
 
-    -- cleanup
-    tween.Completed:Connect(function()
-        fade:Destroy()
+    -- cleanup (optional, since tweens are infinite)
+    return function()
+        tween:Cancel()
+        rotationTween:Cancel()
+        progress:Destroy()
         rotationValue:Destroy()
-    end)
+    end
 end
 
--- continuous cycle with varied timing
+-- start the continuous animation
 task.spawn(function()
+    local cleanup = AnimateGradient()
+    -- keep the task running indefinitely
     while true do
-        for _, pair in ipairs(colorCycles) do
-            local duration = 2 + math.random() * 2 -- random duration between 2 and 4 seconds
-            AnimateGradient(pair[1], pair[2], duration)
-            task.wait(duration + 0.5) -- slight pause between cycles
-        end
+        task.wait(1)
     end
 end)
 
