@@ -52,15 +52,14 @@ local Localization = HaxelUI:Localization({
 
 -- Window setup
 local Window = HaxelUI:CreateWindow({
-    Title                       = "loc:TITLE",
-    Icon                        = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
-    Author                      = "loc:AUTHOR",
-    Description                 = "loc:DESC",
-    Folder                      = "Haxel.lua",
+    Title = "loc:TITLE",
+    Icon = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
+    Author = "loc:AUTHOR",
+    Description = "loc:DESC",
+    Folder = "Haxel.lua",
     User = {
         Enabled = true
     },
-
 })
 
 Window:Tag({
