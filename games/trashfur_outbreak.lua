@@ -18,7 +18,7 @@ local Sections = {
 
 
 local Tabs = {
-    Elements = Sections.Main:Tab({ Title = "loc:UI_ELEMENTS", Icon = "layout-grid", Desc = "UI Elements Example" }),
+    Aimbot = Sections.Main:Tab({ Title = "Aimbot", Icon = "crosshair" }), 
     Appearance = Sections.Settings:Tab({ Title = "loc:APPEARANCE", Icon = "brush" }),
-    Config = Sections.Utilities:Tab({ Title = "loc:CONFIGURATION", Icon = "settings" }),
+    Config = Sections.Settings:Tab({ Title = "loc:CONFIGURATION", Icon = "settings" }),
 }
