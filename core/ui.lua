@@ -58,9 +58,68 @@ local Window = HaxelUI:CreateWindow({
     },
 })
 
-Window:Tag({
+Window:SetIconSize(48)
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local tag = Window:Tag({
     Title = "DEV",
-    Color = Color3.fromHex("#0004ffff")
+    Color = HaxelUI:Gradient({
+        ["0"]   = { Color = Color3.fromHex("#FF0000"), Transparency = 0 }, -- red
+        ["100"] = { Color = Color3.fromHex("#00FF00"), Transparency = 0 }, -- green
+    }, {
+        Rotation = 45,
+    }),
 })
+
+local colorSequence = {
+    "#FF0000", -- bright red
+    "#00FF00", -- bright green
+    "#FFFF00", -- bright yellow
+    "#00FFFF", -- bright cyan
+    "#FF00FF", -- bright magenta
+    "#FFA500", -- bright orange
+    "#007BFF", -- bright blue
+    "#FF0000", -- loop back to red
+}
+
+local function GetInterpolatedColors(progress)
+    local totalSegments = #colorSequence - 1
+    local scaledProgress = progress * totalSegments
+    local index = math.floor(scaledProgress) + 1
+    local t = scaledProgress % 1
+
+    if index >= #colorSequence then
+        index = #colorSequence - 1
+        t = 1
+    end
+
+    local startColor = Color3.fromHex(colorSequence[index])
+    local endColor = Color3.fromHex(colorSequence[index + 1])
+    return startColor:Lerp(endColor, t), startColor:Lerp(endColor, t)
+end
+
+local function AnimateGradient()
+    local progress = 0
+    local rotation = 0
+    local cycleDuration = 16
+    local rotationDuration = 14
+
+    RunService.RenderStepped:Connect(function(dt)
+        progress = (progress + dt / cycleDuration) % 1
+        rotation = (rotation + dt / rotationDuration * 360) % 360
+
+        local c0, c1 = GetInterpolatedColors(progress)
+        tag:SetColor(HaxelUI:Gradient({
+            ["0"]   = { Color = c0, Transparency = 0 },
+            ["100"] = { Color = c1, Transparency = 0 },
+        }, { Rotation = rotation }))
+    end)
+end
+
+AnimateGradient()
+
+
 
 -- Game stuff would go here I guess :P
