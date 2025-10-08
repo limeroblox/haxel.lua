@@ -19,9 +19,4 @@ local Tabs = {
     Elements = Sections.Main:Tab({ Title = "loc:UI_ELEMENTS", Icon = "layout-grid", Desc = "UI Elements Example" }),
     Appearance = Sections.Settings:Tab({ Title = "loc:APPEARANCE", Icon = "brush" }),
     Config = Sections.Utilities:Tab({ Title = "loc:CONFIGURATION", Icon = "settings" }),
-    LockedTab1 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
-    LockedTab2 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
-    LockedTab3 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
-    LockedTab4 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
-    LockedTab5 = Window:Tab({ Title = "loc:LOCKED_TAB", Icon = "bird", Locked = true, }),
 }
