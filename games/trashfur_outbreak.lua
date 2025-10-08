@@ -9,9 +9,11 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 -- Place Holders to see if this method works
 
 local Sections = {
-    Main = Window:Section({ Title = "loc:FEATURES", Opened = true }),
-    Settings = Window:Section({ Title = "loc:SETTINGS", Opened = true }),
-    Utilities = Window:Section({ Title = "loc:UTILITIES", Opened = true }),
+    Main = Window:Section({ Title = "Main", Opened = true }),
+    Visuals = Window:Section({ Title = "Visuals", Opened = true }),
+    Movement = Window:Section({ Title = "Movement", Opened = true }),
+    Misc = Window:Section({ Title = "Misc", Opened = true }),
+    Settings = Window:Section({ Title = "Settings", Opened = true }), -- MADE BY DEFAULT
 }
 
 
