@@ -49,7 +49,7 @@ local Localization = HaxelUI:Localization({
 -- Window setup
 local Window = HaxelUI:CreateWindow({
     Title                       = "loc:TITLE",
-    Icon                        = 'https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg', -- Icon localization not needed, I guess :P, also why is some nsfw, like wth man :(
+    Icon                        = "https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg", -- Icon localization not needed, I guess :P, also why is some nsfw, like wth man :(
     Author                      = "loc:AUTHOR",
     Description                 = "loc:DESC",
     Folder                      = "Haxel.lua",
