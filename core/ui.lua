@@ -9,21 +9,19 @@ It does not include any game-specific elements.
 
 local HaxelUI                   = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
+local defLang = "en"
+
 local Localization = HaxelUI:Localization({
-    Enabled = true,
+    Enabled = true, -- if true, it will enable loclization, very helpful for non-english users.
     Prefix = "loc:",
-    DefaultLanguage = "en", -- Change if you want
+    DefaultLanguage = defLang, -- Changes with the localization setting in settings (In all game based scripts)
     Translations = {
         ["en"] = {
             ["TITLE"]           = "Haxel.lua",
-            ["ICON"]            = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
             ["AUTHOR"]          = "@haxel.py",
-            ["DESC"]            = "Multi-Game Script :D",
+            ["DESC"]            = "Multi-Game Script",
             ["SETTINGS"]        = "Settings",
             ["APPEARANCE"]      = "Appearance",
-            ["FEATURES"]        = "Features",
-            ["UTILITIES"]       = "Utilities",
-            ["UI_ELEMENTS"]     = "UI Elements",
             ["CONFIGURATION"]   = "Configuration",
             ["SAVE_CONFIG"]     = "Save Configuration",
             ["LOAD_CONFIG"]     = "Load Configuration",
@@ -33,14 +31,10 @@ local Localization = HaxelUI:Localization({
         },
         ["ru"] = {
             ["TITLE"]           = "Haxel.lua",
-            ["ICON"]            = "https://m.gjcdn.net/fireside-post-image/500/30447234-mpufxi8n-v4.webp",
             ["AUTHOR"]          = "@haxel.py",
-            ["DESC"]            = "Мультигеймовый скрипт :D",
+            ["DESC"]            = "Мультигеймовый скрипт",
             ["SETTINGS"]        = "Настройки",
             ["APPEARANCE"]      = "Внешний вид",
-            ["FEATURES"]        = "Функции",
-            ["UTILITIES"]       = "Утилиты",
-            ["UI_ELEMENTS"]     = "Элементы интерфейса",
             ["CONFIGURATION"]   = "Конфигурация",
             ["SAVE_CONFIG"]     = "Сохранить конфиг",
             ["LOAD_CONFIG"]     = "Загрузить конфиг",
@@ -54,79 +48,19 @@ local Localization = HaxelUI:Localization({
 
 -- Window setup
 local Window = HaxelUI:CreateWindow({
-    Title = "loc:TITLE",
-    Icon = "loc:ICON",
-    Author = "loc:AUTHOR",
-    Description = "loc:DESC",
-    Folder = "Haxel.lua",
+    Title                       = "loc:TITLE",
+    Icon                        = 'https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg', -- Icon localization not needed, I guess :P, also why is some nsfw, like wth man :(
+    Author                      = "loc:AUTHOR",
+    Description                 = "loc:DESC",
+    Folder                      = "Haxel.lua",
     User = {
-        Enabled = true
+        Enabled                 = true
     },
 })
 
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
-local tag = Window:Tag({
+Window:Tag({
     Title = "DEV",
-    Color = HaxelUI:Gradient({
-        ["0"]   = { Color = Color3.fromHex("#FF0000"), Transparency = 0 }, -- red
-        ["100"] = { Color = Color3.fromHex("#00FF00"), Transparency = 0 }, -- green
-    }, {
-        Rotation = 45,
-    }),
+    Color = Color3.fromHex("#0004ffff")
 })
-
-local colorSequence = {
-    "#FF0000", -- bright red
-    "#00FF00", -- bright green
-    "#FFFF00", -- bright yellow
-    "#00FFFF", -- bright cyan
-    "#FF00FF", -- bright magenta
-    "#FFA500", -- bright orange
-    "#007BFF", -- bright blue
-    "#FF0000", -- loop back to red
-}
-
--- get interpolated colors
-local function GetInterpolatedColors(progress)
-    local totalSegments = #colorSequence - 1
-    local scaledProgress = progress * totalSegments
-    local index = math.floor(scaledProgress) + 1
-    local t = scaledProgress % 1
-
-    if index >= #colorSequence then
-        index = #colorSequence - 1
-        t = 1
-    end
-
-    local startColor = Color3.fromHex(colorSequence[index])
-    local endColor = Color3.fromHex(colorSequence[index + 1])
-    -- both stops move forward for smooth vibe
-    return startColor:Lerp(endColor, t), startColor:Lerp(endColor, t)
-end
-
--- animate gradient & rotation continuously
-local function AnimateGradient()
-    local progress = 0
-    local rotation = 0
-    local cycleDuration = 16 -- seconds per full color cycle
-    local rotationDuration = 14 -- seconds per full rotation
-
-    RunService.RenderStepped:Connect(function(dt)
-        progress = (progress + dt / cycleDuration) % 1
-        rotation = (rotation + dt / rotationDuration * 360) % 360
-
-        local c0, c1 = GetInterpolatedColors(progress)
-        tag:SetColor(HaxelUI:Gradient({
-            ["0"]   = { Color = c0, Transparency = 0 },
-            ["100"] = { Color = c1, Transparency = 0 },
-        }, {
-            Rotation = rotation,
-        }))
-    end)
-end
-
-AnimateGradient()
 
 -- Game stuff would go here I guess :P
