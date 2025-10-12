@@ -58,7 +58,7 @@ local Window = HaxelUI:CreateWindow({
     },
 })
 
-Window:SetIconSize(48)
+Window:SetIconSize(24)
 
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -66,23 +66,48 @@ local RunService = game:GetService("RunService")
 local tag = Window:Tag({
     Title = "DEV",
     Color = HaxelUI:Gradient({
-        ["0"]   = { Color = Color3.fromHex("#FF0000"), Transparency = 0 }, -- red
-        ["100"] = { Color = Color3.fromHex("#00FF00"), Transparency = 0 }, -- green
+        ["0"]   = { Color = Color3.fromHex("#000000ff"), Transparency = 0 }, 
+        ["100"] = { Color = Color3.fromHex("#000000ff"), Transparency = 0 },
     }, {
         Rotation = 45,
     }),
 })
 
 local colorSequence = {
-    "#FF0000", -- bright red
-    "#00FF00", -- bright green
-    "#FFFF00", -- bright yellow
-    "#00FFFF", -- bright cyan
-    "#FF00FF", -- bright magenta
-    "#FFA500", -- bright orange
-    "#007BFF", -- bright blue
-    "#FF0000", -- loop back to red
+    "#000000FF",
+    "#111111FF",
+    "#222222FF",
+    "#333333FF",
+    "#444444FF",
+    "#555555FF",
+    "#666666FF",
+    "#777777FF",
+    "#888888FF",
+    "#999999FF",
+    "#AAAAAAFF",
+    "#BBBBBBFF",
+    "#CCCCCCFF",
+    "#DDDDDDFF",
+    "#EEEEEEFF",
+    "#FFFFFFFF", 
+    "#EEEEEEFF",
+    "#DDDDDDFF",
+    "#CCCCCCFF",
+    "#BBBBBBFF",
+    "#AAAAAAFF",
+    "#999999FF",
+    "#888888FF",
+    "#777777FF",
+    "#666666FF",
+    "#555555FF",
+    "#444444FF",
+    "#333333FF",
+    "#222222FF",
+    "#111111FF",
+    "#000000FF", 
 }
+
+
 
 local function GetInterpolatedColors(progress)
     local totalSegments = #colorSequence - 1
@@ -119,7 +144,4 @@ local function AnimateGradient()
 end
 
 AnimateGradient()
-
-
-
 -- Game stuff would go here I guess :P
