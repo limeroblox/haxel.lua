@@ -63,51 +63,52 @@ Window:SetIconSize(24)
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
+local RunService = game:GetService("RunService")
+
 local tag = Window:Tag({
     Title = "DEV",
     Color = HaxelUI:Gradient({
-        ["0"]   = { Color = Color3.fromHex("#000000ff"), Transparency = 0 }, 
-        ["100"] = { Color = Color3.fromHex("#000000ff"), Transparency = 0 },
+        ["0"]   = { Color = Color3.fromRGB(0, 0, 0), Transparency = 0 }, -- black
+        ["100"] = { Color = Color3.fromRGB(0, 0, 0), Transparency = 0 }, -- black
     }, {
         Rotation = 45,
     }),
 })
 
+-- define color sequence in RGB (converted from hex)
 local colorSequence = {
-    "#000000FF",
-    "#111111FF",
-    "#222222FF",
-    "#333333FF",
-    "#444444FF",
-    "#555555FF",
-    "#666666FF",
-    "#777777FF",
-    "#888888FF",
-    "#999999FF",
-    "#AAAAAAFF",
-    "#BBBBBBFF",
-    "#CCCCCCFF",
-    "#DDDDDDFF",
-    "#EEEEEEFF",
-    "#FFFFFFFF", 
-    "#EEEEEEFF",
-    "#DDDDDDFF",
-    "#CCCCCCFF",
-    "#BBBBBBFF",
-    "#AAAAAAFF",
-    "#999999FF",
-    "#888888FF",
-    "#777777FF",
-    "#666666FF",
-    "#555555FF",
-    "#444444FF",
-    "#333333FF",
-    "#222222FF",
-    "#111111FF",
-    "#000000FF", 
+    Color3.fromRGB(0, 0, 0),      -- #000000FF (black)
+    Color3.fromRGB(17, 17, 17),   -- #111111FF
+    Color3.fromRGB(34, 34, 34),   -- #222222FF
+    Color3.fromRGB(51, 51, 51),   -- #333333FF
+    Color3.fromRGB(68, 68, 68),   -- #444444FF
+    Color3.fromRGB(85, 85, 85),   -- #555555FF
+    Color3.fromRGB(102, 102, 102), -- #666666FF
+    Color3.fromRGB(119, 119, 119), -- #777777FF
+    Color3.fromRGB(136, 136, 136), -- #888888FF
+    Color3.fromRGB(153, 153, 153), -- #999999FF
+    Color3.fromRGB(170, 170, 170), -- #AAAAAAFF
+    Color3.fromRGB(187, 187, 187), -- #BBBBBBFF
+    Color3.fromRGB(204, 204, 204), -- #CCCCCCFF
+    Color3.fromRGB(221, 221, 221), -- #DDDDDDFF
+    Color3.fromRGB(238, 238, 238), -- #EEEEEEFF
+    Color3.fromRGB(255, 255, 255), -- #FFFFFFFF (white)
+    Color3.fromRGB(238, 238, 238), -- #EEEEEEFF
+    Color3.fromRGB(221, 221, 221), -- #DDDDDDFF
+    Color3.fromRGB(204, 204, 204), -- #CCCCCCFF
+    Color3.fromRGB(187, 187, 187), -- #BBBBBBFF
+    Color3.fromRGB(170, 170, 170), -- #AAAAAAFF
+    Color3.fromRGB(153, 153, 153), -- #999999FF
+    Color3.fromRGB(136, 136, 136), -- #888888FF
+    Color3.fromRGB(119, 119, 119), -- #777777FF
+    Color3.fromRGB(102, 102, 102), -- #666666FF
+    Color3.fromRGB(85, 85, 85),   -- #555555FF
+    Color3.fromRGB(68, 68, 68),   -- #444444FF
+    Color3.fromRGB(51, 51, 51),   -- #333333FF
+    Color3.fromRGB(34, 34, 34),   -- #222222FF
+    Color3.fromRGB(17, 17, 17),   -- #111111FF
+    Color3.fromRGB(0, 0, 0),      -- #000000FF (black)
 }
-
-
 
 local function GetInterpolatedColors(progress)
     local totalSegments = #colorSequence - 1
@@ -120,8 +121,8 @@ local function GetInterpolatedColors(progress)
         t = 1
     end
 
-    local startColor = Color3.fromHex(colorSequence[index])
-    local endColor = Color3.fromHex(colorSequence[index + 1])
+    local startColor = colorSequence[index]
+    local endColor = colorSequence[index + 1]
     return startColor:Lerp(endColor, t), startColor:Lerp(endColor, t)
 end
 
