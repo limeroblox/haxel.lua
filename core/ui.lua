@@ -200,7 +200,6 @@ local Localization = HaxelUI:Localization({
             ["APPEARANCE"]      = "দেখা",
             ["CONFIGURATION"]   = "কনফিগারেশন",
             ["SAVE_CONFIG"]     = "কনফিগারেশন সংরক্ষণ করুন",
-            ["LOAD_CONFIG"]     = "কনফিগারেশন লোড",
             ["LOAD_CONFIG"]     = "কনফিগারেশন লোড করুন",
             ["THEME_SELECT"]    = "থিম নির্বাচন করুন",
             ["TRANSPARENCY"]    = "উইন্ডোর স্বচ্ছতা",
