@@ -37,5 +37,5 @@ local AimbotElements = {
         Callback = function(state)
             print("not done yet :P")
         end
-    })
+    }),
 }
