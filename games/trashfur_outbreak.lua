@@ -8,8 +8,6 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 
 -- Place Holders to see if this method works
 
-title = "Bat.lua | Transfur Outbreak"
-
 local Sections = {
     Main = Window:Section({ Title = "Main", Opened = true }),
     Visuals = Window:Section({ Title = "Visuals", Opened = true }),
@@ -31,11 +29,11 @@ local AimbotElements = {
     TextSize = 20,
     }),
     Tabs.Aimbot:Toggle({
-        Title = "Enable"
-        Desc  = "Enable Aimbot :P"
+        Title = "Enable",
+        Desc  = "Enable Aimbot :P",
         Value = false,
         Callback = function(state)
             print("not done yet :P")
         end
-    }),
+    })
 }
