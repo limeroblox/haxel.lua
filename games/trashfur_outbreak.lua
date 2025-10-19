@@ -29,7 +29,7 @@ local AimbotElements = {
     Tabs.Aimbot:Section({
     Title = "Aimbot with seperate body targeting (head & torso)",
     TextSize = 20,
-    })
+    }),
     Tabs.Aimbot:Toggle({
         Title = "Enable"
         Desc  = "Enable Aimbot :P"
