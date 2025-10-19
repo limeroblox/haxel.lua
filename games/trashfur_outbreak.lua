@@ -261,7 +261,7 @@ local AimbotElements = {
         Callback = function(option)
             AimbotState.TargetPart = option
             print("Target part set to:", option)
-        end,
+        end
     }),
 
     Tabs.Aimbot:Slider({
