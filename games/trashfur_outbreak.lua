@@ -229,11 +229,11 @@ local AimbotElements = {
     Tabs.Aimbot:Dropdown({
         Title = "Target Part",
         Desc  = "Which body part to target",
-        Values = { "Head", "Torso", "Random" },
-        Default = "Head",
-        Callback = function(choice)
-            AimbotState.TargetPart = choice
-            print("Target part set to:", choice)
+        Values = { "Head", "Torso" },
+        Value = "Head",
+        Callback = function(option)
+            AimbotState.TargetPart = option
+            print("Target part set to:", option)
         end
     }),
 
