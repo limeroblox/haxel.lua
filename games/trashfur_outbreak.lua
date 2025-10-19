@@ -10,26 +10,24 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/
 
 
 title = "Bat.lua | Transfur Outbreak"
-local label = TitleLabel -- your TextLabel
-label.Text = ""          -- start empty
-
 spawn(function()
     local cursor = "_()"
     local i = 0
     while i <= #title do
-        label.Text = string.sub(title, 1, i) .. cursor
+        title = string.sub(title, 1, i) .. cursor
         i = i + 1
-        task.wait(0.05) -- typing speed
+        task.wait(0.05)
     end
 
     -- keep blinking cursor effect
     while true do
-        label.Text = title .. cursor
+        title = title .. cursor
         task.wait(0.5)
-        label.Text = title .. "   " -- hide cursor
+        title = string.sub(title, 1, #title - #cursor) .. "   "
         task.wait(0.5)
     end
 end)
+
 
 
 local Sections = {
@@ -270,5 +268,6 @@ local AimbotElements = {
 
 
 
-local AppearanceElements = { -- Not Done Yet
+local AppearanceElements = {
+
 }
