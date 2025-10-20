@@ -230,10 +230,8 @@ local Localization = HaxelUI:Localization({
     }
 })
 
-local GameName = nil
-
 local Window = HaxelUI:CreateWindow({
-    Title = "Bat.lua | " ..GameName, 
+    Title = "Bat.lua | " ..Name, 
     Icon = "https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg",
     Author = "@animal.bat",
     Description = "loc:DESC",
