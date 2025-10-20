@@ -2,25 +2,33 @@
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/core/ui.lua"))()
 
--- Placeholder for title effect
-local title = "Bat.lua | Transfur Outbreak"
+title = "Bat.lua | Transfur Outbreak"
+local cursor = "_()"
+local isActive = true -- Flag to control the loop
+
 spawn(function()
-    local cursor = "_()"
-    local i = 0
-    while i <= #title do
-        title = string.sub(title, 1, i) .. cursor
-        i = i + 1
+    -- Typewriter effect
+    local index = 0
+    while index <= #title and isActive do
+        title = string.sub(title, 1, index) .. cursor
+        index = index + 1
         task.wait(0.05)
     end
 
-    -- blinking cursor effect
-    while true do
-        title = title .. cursor
+    -- Blinking cursor effect
+    local baseTitle = title -- Store original title
+    while isActive do
+        title = baseTitle .. cursor
         task.wait(0.5)
-        title = string.sub(title, 1, #title - #cursor) .. "   "
+        title = baseTitle .. "   "
         task.wait(0.5)
     end
 end)
+
+-- Example function to stop the effect
+local function stopEffect()
+    isActive = false
+end
 
 local Sections = {
     Main = Window:Section({ Title = "Main", Opened = true }),
@@ -290,4 +298,4 @@ local AimbotElements = {
     }),
 }
 
-local AppearanceElements = {}
+local AppearanceElements = { }
