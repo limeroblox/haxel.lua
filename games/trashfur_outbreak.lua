@@ -6,26 +6,36 @@ title = "Bat.lua | Transfur Outbreak"
 local cursor = "_()"
 local isActive = true -- Flag to control the loop
 
-spawn(function()
-    -- Typewriter effect
+-- Function for typewriter effect
+local function typewriterEffect(baseTitle, speed)
     local index = 0
-    while index <= #title and isActive do
-        title = string.sub(title, 1, index) .. cursor
+    while index <= #baseTitle and isActive do
+        title = string.sub(baseTitle, 1, index) .. cursor
         index = index + 1
-        task.wait(0.05)
+        task.wait(speed)
     end
+end
 
-    -- Blinking cursor effect
-    local baseTitle = title -- Store original title
+-- Function for blinking cursor effect
+local function blinkingCursorEffect(baseTitle, speed)
     while isActive do
         title = baseTitle .. cursor
-        task.wait(0.5)
+        task.wait(speed)
         title = baseTitle .. "   "
-        task.wait(0.5)
+        task.wait(speed)
+    end
+end
+
+-- Main coroutine to run effects
+spawn(function()
+    local baseTitle = title -- Store original title
+    typewriterEffect(baseTitle, 0.05) -- Run typewriter effect
+    if isActive then
+        blinkingCursorEffect(baseTitle, 0.5) -- Run blinking effect
     end
 end)
 
--- Example function to stop the effect
+-- Function to stop the effect
 local function stopEffect()
     isActive = false
 end
@@ -298,4 +308,4 @@ local AimbotElements = {
     }),
 }
 
-local AppearanceElements = { }
+local AppearanceElements = {}
