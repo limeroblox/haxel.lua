@@ -230,19 +230,10 @@ local Localization = HaxelUI:Localization({
     }
 })
 
--- Window setup
-
-
 local GameName = nil
--- Define the dynamic title using script.Parent.Name
-local gameTitle = "Bat.lua | " .. GameName -- e.g., "Bat.lua | Transfur Outbreak"
-local title = "" -- Keep original empty title for other uses if needed
-local cursor = "_()"
-local isActive = true -- Flag to control the loop
 
--- Create the window with the dynamic title
 local Window = HaxelUI:CreateWindow({
-    Title = gameTitle, -- Use dynamic title from script.Parent
+    Title = "Bat.lua | " ..GameName, 
     Icon = "https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg",
     Author = "@animal.bat",
     Description = "loc:DESC",
@@ -251,48 +242,6 @@ local Window = HaxelUI:CreateWindow({
         Enabled = true
     },
 })
-
--- Function for typewriter effect
-local function typewriterEffect(text, speed)
-    local index = 0
-    while index <= #text and isActive do
-        if Window and Window.Title then
-            Window.Title = string.sub(text, 1, index) .. cursor
-        end
-        index = index + 1
-        task.wait(speed)
-    end
-end
-
--- Function for blinking cursor effect
-local function blinkingCursorEffect(text, speed)
-    while isActive do
-        if Window and Window.Title then
-            Window.Title = text .. cursor
-            task.wait(speed)
-            Window.Title = text .. "   "
-            task.wait(speed)
-        else
-            break -- Exit if Window or Window.Title is invalid
-        end
-    end
-end
-
--- Main coroutine to run effects
-spawn(function()
-    typewriterEffect(gameTitle, 0.05) -- Run typewriter effect with dynamic title
-    if isActive then
-        blinkingCursorEffect(gameTitle, 0.5) -- Run blinking effect
-    end
-end)
-
--- Function to stop the effect
-local function stopEffect()
-    isActive = false
-    if Window and Window.Title then
-        Window.Title = gameTitle -- Reset to the full title without cursor
-    end
-end
 
 Window:SetIconSize(24)
 
