@@ -32,6 +32,13 @@ local AimbotState = {
     Radius      = 100,
 }
 
+--// Persistent state (to handle multiple toggles without leaks)
+local Highlights   = {}          -- plr -> Highlight
+local Connections  = {}          -- RBXScriptConnections
+local RayParams    = RaycastParams.new()
+RayParams.FilterType = Enum.RaycastFilterType.Blacklist
+RayParams.IgnoreWater = true
+
 --// UI elements (unchanged)
 local AimbotElements = {
     Tabs.Aimbot:Section({Title = "Aimbot with wall check + gradient highlight", TextSize = 10}),
@@ -45,14 +52,8 @@ local AimbotElements = {
             print("[Aimbot] Enabled:", state)
 
             --------------------------------------------------------------------
-            --  Internal helpers (only created when the toggle runs)
+            --  Internal helpers
             --------------------------------------------------------------------
-            local Highlights   = {}          -- plr -> Highlight
-            local Connections  = {}          -- stored RBXScriptConnections
-            local RayParams    = RaycastParams.new()
-            RayParams.FilterType = Enum.RaycastFilterType.Blacklist
-            RayParams.IgnoreWater = true
-
             -- Update the blacklist with the current character (or an empty table)
             local function updateRayFilter(char)
                 RayParams.FilterDescendantsInstances = char and {char} or {}
@@ -250,20 +251,27 @@ local AimbotElements = {
             --  Enable / disable logic
             --------------------------------------------------------------------
             if state then
+                -- Clean any previous state first (handles multiple enables)
+                disable()
+
                 -- initial filter
                 updateRayFilter(LocalPlayer.Character)
 
                 -- show highlights immediately
                 updateHighlights()
 
-                -- character respawn handling
-                Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(char)
-                    updateRayFilter(char)
-                    updateHighlights()
-                end)
+                -- character respawn handling (add if not connected)
+                if not Connections.charAdded or not Connections.charAdded.Connected then
+                    Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(char)
+                        updateRayFilter(char)
+                        updateHighlights()
+                    end)
+                end
 
-                -- player left handling
-                Connections.playerRemoving = Players.PlayerRemoving:Connect(removeHighlight)
+                -- player left handling (add if not connected)
+                if not Connections.playerRemoving or not Connections.playerRemoving.Connected then
+                    Connections.playerRemoving = Players.PlayerRemoving:Connect(removeHighlight)
+                end
 
                 -- bind render step
                 RunService:BindToRenderStep("AimbotUpdate",
