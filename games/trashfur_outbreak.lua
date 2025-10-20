@@ -30,6 +30,7 @@ local AimbotState = {
     TargetPart  = "Head",
     FOV         = 90,
     Radius      = 100,
+    TeamCheck   = true,  -- New: Ignore teammates by default
 }
 
 --// Persistent state (to handle multiple toggles without leaks)
@@ -39,7 +40,7 @@ local RayParams    = RaycastParams.new()
 RayParams.FilterType = Enum.RaycastFilterType.Blacklist
 RayParams.IgnoreWater = true
 
---// UI elements (unchanged)
+--// UI elements (added Team Check toggle)
 local AimbotElements = {
     Tabs.Aimbot:Section({Title = "Aimbot with wall check + gradient highlight", TextSize = 10}),
 
@@ -148,6 +149,7 @@ local AimbotElements = {
 
                 for _, pl in ipairs(Players:GetPlayers()) do
                     if pl == LocalPlayer then continue end
+                    if AimbotState.TeamCheck and pl.Team == LocalPlayer.Team then continue end  -- New: Skip teammates if check enabled
                     local char = pl.Character
                     if not (char and char:FindFirstChild("HumanoidRootPart")) then continue end
 
@@ -201,6 +203,10 @@ local AimbotElements = {
             local function updateHighlights()
                 for _, pl in ipairs(Players:GetPlayers()) do
                     if pl == LocalPlayer then continue end
+                    if AimbotState.TeamCheck and pl.Team == LocalPlayer.Team then 
+                        removeHighlight(pl)
+                        continue 
+                    end  -- New: Skip and remove highlights for teammates if check enabled
                     local char = pl.Character
                     if not (char and char:FindFirstChild("HumanoidRootPart")) then
                         removeHighlight(pl)
@@ -280,6 +286,16 @@ local AimbotElements = {
             else
                 disable()
             end
+        end,
+    }),
+
+    Tabs.Aimbot:Toggle({
+        Title    = "Team Check",
+        Desc     = "Ignore players on the same team",
+        Value    = true,
+        Callback = function(state)
+            AimbotState.TeamCheck = state
+            print("[Aimbot] Team Check:", state)
         end,
     }),
 
