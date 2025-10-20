@@ -2,33 +2,34 @@
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/core/ui.lua"))()
 
-title = "Bat.lua | Transfur Outbreak"
+-- Assuming title is already defined as "" and Window is created
+local displayTitle = "Bat.lua | Transfur Outbreak" -- The title to display
 local cursor = "_()"
 local isActive = true -- Flag to control the loop
 
 -- Function for typewriter effect
-local function typewriterEffect(baseTitle, speed)
+local function typewriterEffect(text, speed)
     local index = 0
-    while index <= #baseTitle and isActive do
-        title = string.sub(baseTitle, 1, index) .. cursor
+    while index <= #text and isActive do
+        Window.Title = string.sub(text, 1, index) .. cursor
         index = index + 1
         task.wait(speed)
     end
 end
 
 -- Function for blinking cursor effect
-local function blinkingCursorEffect(baseTitle, speed)
+local function blinkingCursorEffect(text, speed)
     while isActive do
-        title = baseTitle .. cursor
+        Window.Title = text .. cursor
         task.wait(speed)
-        title = baseTitle .. "   "
+        Window.Title = text .. "   "
         task.wait(speed)
     end
 end
 
 -- Main coroutine to run effects
 spawn(function()
-    local baseTitle = title -- Store original title
+    local baseTitle = displayTitle -- Store the title to display
     typewriterEffect(baseTitle, 0.05) -- Run typewriter effect
     if isActive then
         blinkingCursorEffect(baseTitle, 0.5) -- Run blinking effect
@@ -38,6 +39,7 @@ end)
 -- Function to stop the effect
 local function stopEffect()
     isActive = false
+    Window.Title = displayTitle -- Reset to the full title without cursor
 end
 
 local Sections = {
