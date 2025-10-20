@@ -232,7 +232,8 @@ local Localization = HaxelUI:Localization({
 
 -- Window setup
 
-local title 
+local title = ""
+
 local Window = HaxelUI:CreateWindow({
     Title                       = title, -- Changes based on the game, (example: Bat.lua | Bed Wars)
     Icon                        = "https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg", -- Icon localization not needed, I guess :P, also why is some nsfw, like wth man :(
