@@ -2,45 +2,6 @@
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/core/ui.lua"))()
 
-local displayTitle = "Bat.lua | Transfur Outbreak"
-Window.Title = displayTitle -- Set Window.Title initially
-local cursor = "_()"
-local isActive = true
-
--- Function for typewriter effect
-local function typewriterEffect(text, speed)
-    local index = 0
-    while index <= #text and isActive do
-        Window.Title = string.sub(text, 1, index) .. cursor
-        index = index + 1
-        task.wait(speed)
-    end
-end
-
--- Function for blinking cursor effect
-local function blinkingCursorEffect(text, speed)
-    while isActive do
-        Window.Title = text .. cursor
-        task.wait(speed)
-        Window.Title = text .. "   "
-        task.wait(speed)
-    end
-end
-
--- Main coroutine to run effects
-spawn(function()
-    typewriterEffect(displayTitle, 0.05)
-    if isActive then
-        blinkingCursorEffect(displayTitle, 0.5)
-    end
-end)
-
--- Function to stop the effect
-local function stopEffect()
-    isActive = false
-    Window.Title = displayTitle
-end
-
 local Sections = {
     Main = Window:Section({ Title = "Main", Opened = true }),
     Visuals = Window:Section({ Title = "Visuals", Opened = true }),
