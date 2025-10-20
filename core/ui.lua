@@ -233,9 +233,9 @@ local Localization = HaxelUI:Localization({
 -- Window setup
 
 
-
+local GameName = ""
 -- Define the dynamic title using script.Parent.Name
-local gameTitle = "Bat.lua | " .. script.Parent.Name -- e.g., "Bat.lua | Transfur Outbreak"
+local gameTitle = "Bat.lua | " .. GameName -- e.g., "Bat.lua | Transfur Outbreak"
 local title = "" -- Keep original empty title for other uses if needed
 local cursor = "_()"
 local isActive = true -- Flag to control the loop
