@@ -2,6 +2,8 @@
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/core/ui.lua"))()
 
+GameName = "TransFur Outbreak"
+
 local Sections = {
     Main = Window:Section({ Title = "Main", Opened = true }),
     Visuals = Window:Section({ Title = "Visuals", Opened = true }),
