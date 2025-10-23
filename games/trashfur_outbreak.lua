@@ -30,7 +30,6 @@ local AimbotState = {
     TargetPart  = "Head",
     FOV         = 90,
     Radius      = 100,
-    TeamCheck   = true,  -- New: Ignore teammates by default
 }
 
 --// Persistent state (to handle multiple toggles without leaks)
@@ -40,7 +39,7 @@ local RayParams    = RaycastParams.new()
 RayParams.FilterType = Enum.RaycastFilterType.Blacklist
 RayParams.IgnoreWater = true
 
---// UI elements (added Team Check toggle)
+--// UI elements (unchanged)
 local AimbotElements = {
     Tabs.Aimbot:Section({Title = "Aimbot with wall check + gradient highlight", TextSize = 10}),
 
@@ -50,24 +49,17 @@ local AimbotElements = {
         Value    = false,
         Callback = function(state)
             AimbotState.Enabled = state
-            print("[Aimbot] Enabled:", state)
 
-            --------------------------------------------------------------------
-            --  Internal helpers
-            --------------------------------------------------------------------
-            -- Update the blacklist with the current character (or an empty table)
             local function updateRayFilter(char)
                 RayParams.FilterDescendantsInstances = char and {char} or {}
             end
 
-            -- Safe destroy for any Instance
             local function safeDestroy(obj)
                 if obj and typeof(obj) == "Instance" then
                     pcall(obj.Destroy, obj)
                 end
             end
 
-            -- Highlight handling
             local function removeHighlight(plr)
                 local h = Highlights[plr]
                 if h then
@@ -94,9 +86,6 @@ local AimbotElements = {
                 end
             end
 
-            --------------------------------------------------------------------
-            --  Visibility / colour helpers
-            --------------------------------------------------------------------
             local OFFSETS = {
                 Vector3.new(0,0,0),
                 Vector3.new(0.2,0,0), Vector3.new(-0.2,0,0),
@@ -132,14 +121,15 @@ local AimbotElements = {
                 end
             end
 
-            --------------------------------------------------------------------
-            --  Target selection
-            --------------------------------------------------------------------
             local function chooseTargetPart()
-                if AimbotState.TargetPart == "Random" then
-                    return math.random() < 0.5 and "Head" or "Torso"
-                end
                 return AimbotState.TargetPart
+            end
+
+            local function isPlayerAlive(plr)
+                local char = plr.Character
+                if not char then return false end
+                local humanoid = char:FindFirstChild("Humanoid")
+                return humanoid and humanoid.Health > 0
             end
 
             local function findNearestTarget()
@@ -148,8 +138,7 @@ local AimbotElements = {
                 local look   = Workspace.CurrentCamera.CFrame.LookVector
 
                 for _, pl in ipairs(Players:GetPlayers()) do
-                    if pl == LocalPlayer then continue end
-                    if AimbotState.TeamCheck and pl.Team == LocalPlayer.Team then continue end  -- New: Skip teammates if check enabled
+                    if pl == LocalPlayer or not isPlayerAlive(pl) then continue end
                     local char = pl.Character
                     if not (char and char:FindFirstChild("HumanoidRootPart")) then continue end
 
@@ -172,16 +161,13 @@ local AimbotElements = {
                 return bestPlr, bestPart, bestDist
             end
 
-            --------------------------------------------------------------------
-            --  Aiming logic
-            --------------------------------------------------------------------
             local function intensityToSmoothing(i)
                 local t = i/100
                 return 0.15 + (0.83 * (t ^ 1.6))
             end
 
             local function aimAt(part, smoothing, dist)
-                if not part then return end
+                if not part or not part.Parent then return end
                 if dist < 50 then
                     local desired = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, part.Position)
                     Workspace.CurrentCamera.CFrame = Workspace.CurrentCamera.CFrame:Lerp(desired, smoothing)
@@ -197,16 +183,14 @@ local AimbotElements = {
                 end
             end
 
-            --------------------------------------------------------------------
-            --  Highlight update
-            --------------------------------------------------------------------
             local function updateHighlights()
                 for _, pl in ipairs(Players:GetPlayers()) do
                     if pl == LocalPlayer then continue end
-                    if AimbotState.TeamCheck and pl.Team == LocalPlayer.Team then 
+                    if not isPlayerAlive(pl) then
                         removeHighlight(pl)
-                        continue 
-                    end  -- New: Skip and remove highlights for teammates if check enabled
+                        continue
+                    end
+                    
                     local char = pl.Character
                     if not (char and char:FindFirstChild("HumanoidRootPart")) then
                         removeHighlight(pl)
@@ -229,21 +213,15 @@ local AimbotElements = {
                 end
             end
 
-            --------------------------------------------------------------------
-            --  Render step
-            --------------------------------------------------------------------
             local function renderStep()
                 if not AimbotState.Enabled then return end
                 updateHighlights()
                 local targetPlr, targetPart, dist = findNearestTarget()
-                if targetPlr and targetPart then
+                if targetPlr and targetPart and isPlayerAlive(targetPlr) then
                     aimAt(targetPart, intensityToSmoothing(AimbotState.Intensity), dist)
                 end
             end
 
-            --------------------------------------------------------------------
-            --  Cleanup / disable
-            --------------------------------------------------------------------
             local function disable()
                 RunService:UnbindFromRenderStep("AimbotUpdate")
                 cleanupAllHighlights()
@@ -253,20 +231,11 @@ local AimbotElements = {
                 table.clear(Connections)
             end
 
-            --------------------------------------------------------------------
-            --  Enable / disable logic
-            --------------------------------------------------------------------
             if state then
-                -- Clean any previous state first (handles multiple enables)
                 disable()
-
-                -- initial filter
                 updateRayFilter(LocalPlayer.Character)
-
-                -- show highlights immediately
                 updateHighlights()
 
-                -- character respawn handling (add if not connected)
                 if not Connections.charAdded or not Connections.charAdded.Connected then
                     Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(char)
                         updateRayFilter(char)
@@ -274,12 +243,10 @@ local AimbotElements = {
                     end)
                 end
 
-                -- player left handling (add if not connected)
                 if not Connections.playerRemoving or not Connections.playerRemoving.Connected then
                     Connections.playerRemoving = Players.PlayerRemoving:Connect(removeHighlight)
                 end
 
-                -- bind render step
                 RunService:BindToRenderStep("AimbotUpdate",
                     Enum.RenderPriority.Camera.Value + 1,
                     renderStep)
@@ -290,16 +257,56 @@ local AimbotElements = {
     }),
 
     Tabs.Aimbot:Toggle({
-        Title    = "Team Check",
-        Desc     = "Ignore players on the same team",
-        Value    = true,
+        Title    = "Autofire",
+        Desc     = "Auto-shoot at targets",
+        Value    = false,
         Callback = function(state)
-            AimbotState.TeamCheck = state
-            print("[Aimbot] Team Check:", state)
+            AimbotState.AutofireEnabled = state
+            if state then
+                spawn(function()
+                    while AimbotState.AutofireEnabled do
+                        local weapon = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                        if not weapon then 
+                            task.wait(0.1)
+                            continue 
+                        end
+
+                        local settingsModule = weapon:FindFirstChild("SETTINGS")
+                        if not settingsModule then 
+                            task.wait(0.1)
+                            continue 
+                        end
+
+                        local settings = require(settingsModule)
+                        local targetPlr, targetPart, dist = findNearestTarget()
+                        
+                        if targetPlr and targetPart and isPlayerAlive(targetPlr) then
+                            local rayOrigin = LocalPlayer.Character.Torso.Position
+                            local rayDirection = (targetPart.Position - rayOrigin).Unit * settings.RANGE
+                            local result = Workspace:Raycast(rayOrigin, rayDirection, RayParams)
+                            
+                            if result and result.Instance:IsDescendantOf(targetPlr.Character) then
+                                local replacement = {
+                                    [3] = settings.FIRERATE,
+                                    [4] = targetPart,
+                                    [5] = CFrame.new(weapon.Barrel.Position, targetPart.Position).LookVector,
+                                    [7] = targetPart.Position
+                                }
+
+                                game:GetService("ReplicatedStorage").PEW:FireServer(
+                                    weapon, settings.COUNT, replacement[3], replacement[4], 
+                                    replacement[5], false, replacement[7], settings.RANGE
+                                )
+                            end
+                        end
+                        
+                        task.wait(AimbotState.AutofireRPM)
+                    end
+                end)
+            end
         end,
     }),
 
-    -- The rest of the UI elements stay exactly the same
     Tabs.Aimbot:Dropdown({
         Title   = "Target Part",
         Desc    = "Which body part to target",
@@ -319,14 +326,21 @@ local AimbotElements = {
         Title   = "FOV (degrees)",
         Desc    = "Field of view used to pick targets",
         Value   = {Min = 10, Max = 180, Default = 90},
-        Callback = function(v) AimbotState.FOV = v end,
+        Callback = function(v) AimbotState.FOV = math.max(10, math.min(180, v)) end,
     }),
 
     Tabs.Aimbot:Slider({
         Title   = "Radius (studs)",
         Desc    = "Max search distance",
         Value   = {Min = 10, Max = 1000, Default = 100},
-        Callback = function(v) AimbotState.Radius = v end,
+        Callback = function(v) AimbotState.Radius = math.max(10, math.min(1000, v)) end,
+    }),
+
+    Tabs.Aimbot:Slider({
+        Title   = "Autofire RPM",
+        Desc    = "Fire rate (0.05-1 seconds)",
+        Value   = {Min = 0.05, Max = 1, Default = 0.1},
+        Callback = function(v) AimbotState.AutofireRPM = v end,
     }),
 }
 
