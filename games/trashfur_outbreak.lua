@@ -32,6 +32,7 @@ local AimbotState = {
     TargetPart      = "Head",
     FOV             = 90,
     Radius          = 100,
+    IgnoreTeammates = true,
 }
 
 --// Persistent state
@@ -63,7 +64,7 @@ end
 local function getHighlight(plr)
     if not Highlights[plr] then
         local h = Instance.new("Highlight")
-        h.FillTransparency    = 0.8
+        h.FillTransparency = 0.8
         h.OutlineTransparency = 0.6
         h.Parent = Workspace
         Highlights[plr] = h
@@ -78,25 +79,26 @@ local function cleanupAllHighlights()
     end
 end
 
---// Visibility & color logic
+--// Visibility offsets
 local OFFSETS = {
-    Vector3.new(0,0,0),
-    Vector3.new(0.2,0,0), Vector3.new(-0.2,0,0),
-    Vector3.new(0,0.2,0), Vector3.new(0,-0.2,0),
+    Vector3.new(0, 0, 0),
+    Vector3.new(0.2, 0, 0),
+    Vector3.new(-0.2, 0, 0),
+    Vector3.new(0, 0.2, 0),
+    Vector3.new(0, -0.2, 0),
 }
 
+--// Visibility scoring
 local function visibilityScore(part)
     if not (part and part.Parent) then return 0 end
-
     local origin = Workspace.CurrentCamera.CFrame.Position
-    local pos    = part.Position
+    local pos = part.Position
     local visible = 0
 
     for _, off in ipairs(OFFSETS) do
         local worldPos = pos + part.CFrame:VectorToWorldSpace(off)
-        local dir      = worldPos - origin
-        local result   = Workspace:Raycast(origin, dir.Unit * dir.Magnitude, RayParams)
-
+        local dir = worldPos - origin
+        local result = Workspace:Raycast(origin, dir.Unit * dir.Magnitude, RayParams)
         if not result or result.Instance:IsDescendantOf(part.Parent) then
             visible += 1
         end
@@ -105,6 +107,7 @@ local function visibilityScore(part)
     return visible / #OFFSETS
 end
 
+--// Colors
 local RED    = Color3.fromRGB(200, 0, 0)
 local YELLOW = Color3.fromRGB(220, 180, 0)
 local GREEN  = Color3.fromRGB(0, 200, 0)
@@ -117,7 +120,7 @@ local function colorFromVis(v)
     end
 end
 
---// Core targeting logic
+--// Target helpers
 local function chooseTargetPart()
     return AimbotState.TargetPart
 end
@@ -129,13 +132,15 @@ local function isPlayerAlive(plr)
     return humanoid and humanoid.Health > 0
 end
 
+--// Targeting logic
 local function findNearestTarget()
     local bestDist, bestPlr, bestPart = math.huge, nil, nil
     local camPos = Workspace.CurrentCamera.CFrame.Position
-    local look   = Workspace.CurrentCamera.CFrame.LookVector
+    local look = Workspace.CurrentCamera.CFrame.LookVector
 
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl == LocalPlayer or not isPlayerAlive(pl) then continue end
+        if AimbotState.IgnoreTeammates and LocalPlayer.Team and pl.Team and pl.Team == LocalPlayer.Team then continue end
 
         local char = pl.Character
         if not (char and char:FindFirstChild("HumanoidRootPart")) then continue end
@@ -145,7 +150,7 @@ local function findNearestTarget()
         local dist = dir.Magnitude
         if dist > AimbotState.Radius then continue end
 
-        local dot   = math.clamp(look:Dot(dir.Unit), -1, 1)
+        local dot = math.clamp(look:Dot(dir.Unit), -1, 1)
         local angle = math.deg(math.acos(dot))
         if angle > AimbotState.FOV / 2 then continue end
 
@@ -160,7 +165,7 @@ local function findNearestTarget()
     return bestPlr, bestPart, bestDist
 end
 
---// Aiming behavior
+--// Smoothing and aim
 local function intensityToSmoothing(i)
     local t = i / 100
     return 0.15 + (0.83 * (t ^ 1.6))
@@ -184,11 +189,16 @@ local function aimAt(part, smoothing, dist)
     end
 end
 
---// Highlights
+--// Highlight updates
 local function updateHighlights()
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl == LocalPlayer then continue end
         if not isPlayerAlive(pl) then
+            removeHighlight(pl)
+            continue
+        end
+
+        if AimbotState.IgnoreTeammates and LocalPlayer.Team and pl.Team and pl.Team == LocalPlayer.Team then
             removeHighlight(pl)
             continue
         end
@@ -206,7 +216,7 @@ local function updateHighlights()
         end
 
         local vis = visibilityScore(part)
-        local h   = getHighlight(pl)
+        local h = getHighlight(pl)
         h.Adornee = char
         h.FillColor = colorFromVis(vis)
         h.OutlineColor = h.FillColor
@@ -215,28 +225,22 @@ local function updateHighlights()
     end
 end
 
---// Render logic
+--// Main loop
 local function renderStep()
     if not AimbotState.Enabled then return end
     updateHighlights()
-
     local targetPlr, targetPart, dist = findNearestTarget()
     if targetPlr and targetPart and isPlayerAlive(targetPlr) then
         aimAt(targetPart, intensityToSmoothing(AimbotState.Intensity), dist)
     end
 end
 
---// Disable function
 local function disable()
     RunService:UnbindFromRenderStep("AimbotUpdate")
     cleanupAllHighlights()
-
     for _, conn in pairs(Connections) do
-        if conn.Connected then
-            conn:Disconnect()
-        end
+        if conn.Connected then conn:Disconnect() end
     end
-
     table.clear(Connections)
 end
 
@@ -244,7 +248,7 @@ end
 local AimbotElements = {
     Tabs.Aimbot:Section({
         Title = "Aimbot with wall check + gradient highlight",
-        TextSize = 10
+        TextSize = 10,
     }),
 
     Tabs.Aimbot:Toggle({
@@ -270,9 +274,11 @@ local AimbotElements = {
                     Connections.playerRemoving = Players.PlayerRemoving:Connect(removeHighlight)
                 end
 
-                RunService:BindToRenderStep("AimbotUpdate",
+                RunService:BindToRenderStep(
+                    "AimbotUpdate",
                     Enum.RenderPriority.Camera.Value + 1,
-                    renderStep)
+                    renderStep
+                )
             else
                 disable()
             end
@@ -285,7 +291,6 @@ local AimbotElements = {
         Value = false,
         Callback = function(state)
             AimbotState.AutofireEnabled = state
-
             if state then
                 spawn(function()
                     while AimbotState.AutofireEnabled do
@@ -337,52 +342,62 @@ local AimbotElements = {
         end,
     }),
 
+    Tabs.Aimbot:Toggle({
+        Title = "Ignore Teammates",
+        Desc = "Don't target players on your team",
+        Value = true,
+        Callback = function(state)
+            AimbotState.IgnoreTeammates = state
+        end,
+    }),
+
     Tabs.Aimbot:Dropdown({
-        Title  = "Target Part",
-        Desc   = "Which body part to target",
-        Values = {"Head", "Torso"},
-        Value  = "Head",
+        Title = "Target Part",
+        Desc = "Which body part to target",
+        Values = { "Head", "Torso" },
+        Value = "Head",
         Callback = function(v)
             AimbotState.TargetPart = v
         end,
     }),
 
     Tabs.Aimbot:Slider({
-        Title   = "Effect Intensity",
-        Desc    = "0-50 = smooth, 90-100 = snappy",
-        Value   = {Min = 0, Max = 100, Default = 50},
+        Title = "Effect Intensity",
+        Desc = "0-50 = smooth, 90-100 = snappy",
+        Value = { Min = 0, Max = 100, Default = 50 },
         Callback = function(v)
             AimbotState.Intensity = v
         end,
     }),
 
     Tabs.Aimbot:Slider({
-        Title   = "FOV (degrees)",
-        Desc    = "Field of view used to pick targets",
-        Value   = {Min = 10, Max = 180, Default = 90},
+        Title = "FOV (degrees)",
+        Desc = "Field of view used to pick targets",
+        Value = { Min = 10, Max = 180, Default = 90 },
         Callback = function(v)
-            AimbotState.FOV = math.clamp(v, 10, 180)
+            AimbotState.FOV = math.max(10, math.min(180, v))
         end,
     }),
 
     Tabs.Aimbot:Slider({
-        Title   = "Radius (studs)",
-        Desc    = "Max search distance",
-        Value   = {Min = 10, Max = 1000, Default = 100},
+        Title = "Radius (studs)",
+        Desc = "Max search distance",
+        Value = { Min = 10, Max = 1000, Default = 100 },
         Callback = function(v)
-            AimbotState.Radius = math.clamp(v, 10, 1000)
+            AimbotState.Radius = math.max(10, math.min(1000, v))
         end,
     }),
 
     Tabs.Aimbot:Slider({
-        Title   = "Autofire RPM",
-        Desc    = "Fire rate (0.05–1 seconds)",
-        Value   = {Min = 0.05, Max = 1, Default = 0.1},
+        Title = "Autofire RPM",
+        Desc = "Fire rate (0.05-1 seconds)",
+        Value = { Min = 0.05, Max = 1, Default = 0.1 },
         Callback = function(v)
             AimbotState.AutofireRPM = v
         end,
     }),
 }
+
 
 
 local AppearanceElements = {}
