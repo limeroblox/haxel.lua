@@ -89,18 +89,24 @@ local OFFSETS = {
 }
 
 --// Visibility scoring
-local function visibilityScore(part)
-    if not (part and part.Parent) then return 0 end
-    local origin = Workspace.CurrentCamera.CFrame.Position
-    local pos = part.Position
+local function getVisibilityScore(origin, targetPart, filterChar)
     local visible = 0
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.IgnoreWater = true
+    params.FilterDescendantsInstances = {filterChar}
+
+    local pos = targetPart.Position
 
     for _, off in ipairs(OFFSETS) do
-        local worldPos = pos + part.CFrame:VectorToWorldSpace(off)
+        local worldPos = pos + targetPart.CFrame:VectorToWorldSpace(off)
         local dir = worldPos - origin
-        local result = Workspace:Raycast(origin, dir.Unit * dir.Magnitude, RayParams)
-        if not result or result.Instance:IsDescendantOf(part.Parent) then
-            visible += 1
+        local magnitude = dir.Magnitude
+        if magnitude > 0 then
+            local result = Workspace:Raycast(origin, dir.Unit * magnitude, params)
+            if not result or result.Instance:IsDescendantOf(targetPart.Parent) then
+                visible += 1
+            end
         end
     end
 
@@ -109,16 +115,7 @@ end
 
 --// Colors
 local RED    = Color3.fromRGB(200, 0, 0)
-local YELLOW = Color3.fromRGB(220, 180, 0)
-local GREEN  = Color3.fromRGB(0, 200, 0)
-
-local function colorFromVis(v)
-    if v <= 0.5 then
-        return RED:Lerp(YELLOW, v / 0.5)
-    else
-        return YELLOW:Lerp(GREEN, (v - 0.5) / 0.5)
-    end
-end
+local ORANGE = Color3.fromRGB(255, 165, 0)
 
 --// Target helpers
 local function chooseTargetPart()
@@ -137,6 +134,7 @@ local function findNearestTarget()
     local bestDist, bestPlr, bestPart = math.huge, nil, nil
     local camPos = Workspace.CurrentCamera.CFrame.Position
     local look = Workspace.CurrentCamera.CFrame.LookVector
+    local myChar = LocalPlayer.Character
 
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl == LocalPlayer or not isPlayerAlive(pl) then continue end
@@ -157,7 +155,8 @@ local function findNearestTarget()
         local part = char:FindFirstChild(chooseTargetPart()) or hrp
         if not part then continue end
 
-        if visibilityScore(part) > 0.3 and dist < bestDist then
+        local vis = getVisibilityScore(camPos, part, myChar)
+        if vis > 0.3 and dist < bestDist then
             bestDist, bestPlr, bestPart = dist, pl, part
         end
     end
@@ -190,7 +189,14 @@ local function aimAt(part, smoothing, dist)
 end
 
 --// Highlight updates
-local function updateHighlights()
+local function updateHighlights(targetPlr)
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+    local myHrp = myChar.HumanoidRootPart
+    local myPart = myChar:FindFirstChild("Head") or myHrp
+
+    local is_active = AimbotState.AutofireEnabled or (targetPlr ~= nil)
+
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl == LocalPlayer then continue end
         if not isPlayerAlive(pl) then
@@ -209,16 +215,36 @@ local function updateHighlights()
             continue
         end
 
+        local hrp = char.HumanoidRootPart
         local part = char:FindFirstChild(AimbotState.TargetPart) or char:FindFirstChild("Head")
         if not part then
             removeHighlight(pl)
             continue
         end
 
-        local vis = visibilityScore(part)
+        local vis = getVisibilityScore(Workspace.CurrentCamera.CFrame.Position, part, myChar)
+
         local h = getHighlight(pl)
         h.Adornee = char
-        h.FillColor = colorFromVis(vis)
+
+        if not is_active then
+            h.FillColor = RED
+        else
+            local dist = (hrp.Position - myHrp.Position).Magnitude
+            local near_factor = math.clamp(1 - (dist / AimbotState.Radius), 0, 1)
+
+            local targetHead = char:FindFirstChild("Head") or hrp
+            local vis_to_me = getVisibilityScore(targetHead.Position, myPart, char)
+            local dir_to_me = (myPart.Position - targetHead.Position).Unit
+            local dot = targetHead.CFrame.LookVector:Dot(dir_to_me)
+
+            if dot > 0 and vis_to_me > 0.3 then
+                h.FillColor = RED:Lerp(ORANGE, near_factor)
+            else
+                h.FillColor = RED
+            end
+        end
+
         h.OutlineColor = h.FillColor
         h.FillTransparency = 0.9 - (vis * 0.75)
         h.OutlineTransparency = 0.6 - (vis * 0.5)
@@ -228,8 +254,8 @@ end
 --// Main loop
 local function renderStep()
     if not AimbotState.Enabled then return end
-    updateHighlights()
     local targetPlr, targetPart, dist = findNearestTarget()
+    updateHighlights(targetPlr)
     if targetPlr and targetPart and isPlayerAlive(targetPlr) then
         aimAt(targetPart, intensityToSmoothing(AimbotState.Intensity), dist)
     end
@@ -261,12 +287,12 @@ local AimbotElements = {
             if state then
                 disable()
                 updateRayFilter(LocalPlayer.Character)
-                updateHighlights()
+                updateHighlights(nil)
 
                 if not Connections.charAdded or not Connections.charAdded.Connected then
                     Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(char)
                         updateRayFilter(char)
-                        updateHighlights()
+                        updateHighlights(nil)
                     end)
                 end
 
