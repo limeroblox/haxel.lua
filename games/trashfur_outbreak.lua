@@ -27,7 +27,7 @@ local Mouse        = LocalPlayer:GetMouse()
 local AimbotState = {
     Enabled         = false,
     AutofireEnabled = false,
-    AutofireRPM     = 0.1,
+    AutofireDelay   = 100,
     Intensity       = 50,
     TargetPart      = "Head",
     FOV             = 90,
@@ -116,6 +116,7 @@ end
 --// Colors
 local RED    = Color3.fromRGB(200, 0, 0)
 local ORANGE = Color3.fromRGB(255, 165, 0)
+local GREEN  = Color3.fromRGB(0, 255, 0)
 
 --// Target helpers
 local function chooseTargetPart()
@@ -188,14 +189,24 @@ local function aimAt(part, smoothing, dist)
     end
 end
 
---// Highlight updates
+--// Highlight updates (reworked for optimization and bug fixes)
 local function updateHighlights(targetPlr)
     local myChar = LocalPlayer.Character
-    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then 
+        return 
+    end
     local myHrp = myChar.HumanoidRootPart
     local myPart = myChar:FindFirstChild("Head") or myHrp
 
-    local is_active = AimbotState.AutofireEnabled or (targetPlr ~= nil)
+    local camPos = Workspace.CurrentCamera.CFrame.Position
+    local look = Workspace.CurrentCamera.CFrame.LookVector
+
+    -- Clean up highlights for disconnected or dead players first
+    for plr, _ in pairs(Highlights) do
+        if not Players:FindFirstChild(plr.Name) or not isPlayerAlive(plr) then
+            removeHighlight(plr)
+        end
+    end
 
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl == LocalPlayer then continue end
@@ -203,7 +214,6 @@ local function updateHighlights(targetPlr)
             removeHighlight(pl)
             continue
         end
-
         if AimbotState.IgnoreTeammates and LocalPlayer.Team and pl.Team and pl.Team == LocalPlayer.Team then
             removeHighlight(pl)
             continue
@@ -216,38 +226,42 @@ local function updateHighlights(targetPlr)
         end
 
         local hrp = char.HumanoidRootPart
+        local dir = hrp.Position - camPos
+        local dist = dir.Magnitude
+        local dot = math.clamp(look:Dot(dir.Unit), -1, 1)
+        local angle = math.deg(math.acos(dot))
+        if dist > AimbotState.Radius or angle > AimbotState.FOV / 2 then
+            removeHighlight(pl)
+            continue
+        end
+
         local part = char:FindFirstChild(AimbotState.TargetPart) or char:FindFirstChild("Head")
         if not part then
             removeHighlight(pl)
             continue
         end
 
-        local vis = getVisibilityScore(Workspace.CurrentCamera.CFrame.Position, part, myChar)
+        local vis = getVisibilityScore(camPos, part, myChar)
 
         local h = getHighlight(pl)
         h.Adornee = char
 
-        if not is_active then
-            h.FillColor = RED
-        else
-            local dist = (hrp.Position - myHrp.Position).Magnitude
-            local near_factor = math.clamp(1 - (dist / AimbotState.Radius), 0, 1)
+        local color = RED
+        local fillTrans = 0.9 - (vis * 0.4)
+        local outlineTrans = 0.6 - (vis * 0.3)
 
-            local targetHead = char:FindFirstChild("Head") or hrp
-            local vis_to_me = getVisibilityScore(targetHead.Position, myPart, char)
-            local dir_to_me = (myPart.Position - targetHead.Position).Unit
-            local dot = targetHead.CFrame.LookVector:Dot(dir_to_me)
-
-            if dot > 0 and vis_to_me > 0.3 then
-                h.FillColor = RED:Lerp(ORANGE, near_factor)
-            else
-                h.FillColor = RED
-            end
+        if vis > 0.3 then
+            color = ORANGE
         end
 
-        h.OutlineColor = h.FillColor
-        h.FillTransparency = 0.9 - (vis * 0.75)
-        h.OutlineTransparency = 0.6 - (vis * 0.5)
+        if pl == targetPlr then
+            color = GREEN
+        end
+
+        h.FillColor = color
+        h.OutlineColor = color
+        h.FillTransparency = fillTrans
+        h.OutlineTransparency = outlineTrans
     end
 end
 
@@ -285,13 +299,16 @@ local AimbotElements = {
             AimbotState.Enabled = state
 
             if state then
-                disable()
-                updateRayFilter(LocalPlayer.Character)
+                disable()  -- Clean up previous state
+                local char = LocalPlayer.Character
+                if char then
+                    updateRayFilter(char)
+                end
                 updateHighlights(nil)
 
                 if not Connections.charAdded or not Connections.charAdded.Connected then
-                    Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(char)
-                        updateRayFilter(char)
+                    Connections.charAdded = LocalPlayer.CharacterAdded:Connect(function(newChar)
+                        updateRayFilter(newChar)
                         updateHighlights(nil)
                     end)
                 end
@@ -319,8 +336,13 @@ local AimbotElements = {
             AimbotState.AutofireEnabled = state
             if state then
                 spawn(function()
-                    while AimbotState.AutofireEnabled do
-                        local weapon = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                    while AimbotState.AutofireEnabled and AimbotState.Enabled do  -- Added Enabled check to prevent orphan loops
+                        local myChar = LocalPlayer.Character
+                        if not myChar then
+                            task.wait(0.1)
+                            continue
+                        end
+                        local weapon = myChar:FindFirstChildOfClass("Tool")
                         if not weapon then
                             task.wait(0.1)
                             continue
@@ -336,7 +358,12 @@ local AimbotElements = {
                         local targetPlr, targetPart, dist = findNearestTarget()
 
                         if targetPlr and targetPart and isPlayerAlive(targetPlr) then
-                            local rayOrigin = LocalPlayer.Character.Torso.Position
+                            local rayOrigin = myChar:FindFirstChild("Torso") or myChar:FindFirstChild("UpperTorso")  -- Fallback for R15
+                            if not rayOrigin then
+                                task.wait(0.1)
+                                continue
+                            end
+                            rayOrigin = rayOrigin.Position
                             local rayDirection = (targetPart.Position - rayOrigin).Unit * settings.RANGE
                             local result = Workspace:Raycast(rayOrigin, rayDirection, RayParams)
 
@@ -361,7 +388,7 @@ local AimbotElements = {
                             end
                         end
 
-                        task.wait(AimbotState.AutofireRPM)
+                        task.wait(AimbotState.AutofireDelay / 1000)
                     end
                 end)
             end
@@ -415,11 +442,11 @@ local AimbotElements = {
     }),
 
     Tabs.Aimbot:Slider({
-        Title = "Autofire RPM",
-        Desc = "Fire rate (0.05-1 seconds)",
-        Value = { Min = 0.05, Max = 1, Default = 0.1 },
+        Title = "Autofire Delay (ms)",
+        Desc = "(Delay in milliseconds; 20 ms = 50 bullets per sec)",
+        Value = { Min = 20, Max = 1000, Default = 100 },
         Callback = function(v)
-            AimbotState.AutofireRPM = v
+            AimbotState.AutofireDelay = v
         end,
     }),
 }
