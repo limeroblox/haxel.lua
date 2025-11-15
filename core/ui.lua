@@ -231,7 +231,7 @@ local Localization = HaxelUI:Localization({
 })
 
 local Window = HaxelUI:CreateWindow({
-    Title = "Bat.lua", 
+    Title = "e621.xyz", 
     Icon = "https://itaku.ee/api/media/gallery_imgs/nikoty_FG55uER/xl.jpg",
     Author = "@animal.bat",
     Description = "loc:DESC",
