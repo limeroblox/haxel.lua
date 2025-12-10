@@ -2,7 +2,7 @@
 
 A luau script in dev used by ObsidianUi: https://github.com/deividcomsono/Obsidian
 
-Supported Games:
+## Supported Games:
 
 Blackout: Revival (and its copies, execpt for PDS)
  
