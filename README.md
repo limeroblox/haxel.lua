@@ -4,11 +4,7 @@ A luau script in dev used by ObsidianUi: https://github.com/deividcomsono/Obsidi
 
 Supported Games:
 
-Blackout Genera:
-
- Blackout Modded
- 
- Blackout: Revival (Main Game)
+Blackout: Revival (and its copies, execpt for PDS)
  
 Transfur Outbreak
 
