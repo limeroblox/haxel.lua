@@ -7,6 +7,7 @@ Supported Games:
 Blackout Genera:
 
  Blackout Modded
+ 
  Blackout: Revival (Main Game)
  
 Transfur Outbreak
