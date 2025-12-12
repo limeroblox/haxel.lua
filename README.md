@@ -1,4 +1,4 @@
-# Haxel.lua
+# MeowWare.lua
 
 A luau script in dev used by ObsidianUi: https://github.com/deividcomsono/Obsidian
 
