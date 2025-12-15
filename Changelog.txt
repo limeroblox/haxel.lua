@@ -7,5 +7,5 @@
 12/15/25
 
 --// Reworked core/ui
---// Added Supported Platforms to .md file
+--// Added Supported Platforms To .md File
 --// Added EXAMPLE.lua Temporarily
