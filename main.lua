@@ -10,15 +10,15 @@ local BlacklistedGames = {
     [888888888] = true, 
 }
 local SupportedGames = {
-    [123456789]     = "blackout_revival.lua",
-    [5987922834]    = "trashfur_outbreak.lua",
-    [111222333]     = "pressure.lua",
+    [123456789]    = "blackout_revival.lua",
+    [5987922834]   = "trashfur_outbreak.lua",
+    [111222333]    = "pressure.lua",
 }
 local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
-local BaseURL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
-local MarketplaceService = game:GetService("MarketplaceService")
-local PlaceId = game.PlaceId
-local Success, GameInfo = pcall(function()
+local BaseURL             = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
+local MarketplaceService  = game:GetService("MarketplaceService")
+local PlaceId             = game.PlaceId
+local Success, GameInfo   = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
 end)
 local GameName = Success and GameInfo.Name or "Unknown Game"
