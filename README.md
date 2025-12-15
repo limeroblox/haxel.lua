@@ -6,8 +6,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.l
 A Luau script currently in development, using **[Obsidian Ui](https://github.com/deividcomsono/Obsidian)**
 # Supported Games
 
-- Blackout: Revival
-  *(and its copies, except for Blackout:PDS)*
+- Blackout: Revival *(and its copies, except for Blackout:PDS)*
 
 - Transfur Outbreak
 
