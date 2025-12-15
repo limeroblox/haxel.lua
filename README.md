@@ -7,8 +7,7 @@ A Luau script currently in development, using **[Obsidian Ui](https://github.com
 # Supported Games
 
 - Blackout: Revival
-
-*(and its copies, except for Blackout:PDS)*
+  *(and its copies, except for Blackout:PDS)*
 
 - Transfur Outbreak
 
