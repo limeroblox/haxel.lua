@@ -1,4 +1,4 @@
-# MeowWare.lua
+# MeowWare.lua Ver: 0.0.1 DEV
 
 ```luau
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/main.lua"))()
