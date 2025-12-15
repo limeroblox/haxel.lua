@@ -1,2 +1,10 @@
-// Reworked Main.lua
-// Reworked .md file
+12/10/25
+
+--// Reworked Main.lua
+--// Reworked .md file
+--// Added This Changelog
+
+12/15/25
+
+--// Reworked core/ui
+--// Added Supported Platforms to .md file
