@@ -10,9 +10,9 @@ local BlacklistedGames = {
     [888888888] = true, 
 }
 local SupportedGames = {
-    [123456789] = "blackout_revival.lua",
-    [5987922834] = "trashfur_outbreak.lua",
-    [111222333] = "pressure.lua",
+    [123456789] = "Blackout Revival.lua",
+    [5987922834] = "Transfur Outbreak.lua",
+    [111222333] = "Pressure.lua",
 }
 local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
 local BaseURL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
