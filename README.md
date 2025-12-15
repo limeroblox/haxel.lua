@@ -1,4 +1,7 @@
 # MeowWare.lua
+```luau
+loadstring()
+```
 
 A luau script in dev used by ObsidianUi: https://github.com/deividcomsono/Obsidian
 
