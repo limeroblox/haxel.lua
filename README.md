@@ -4,6 +4,7 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/main.lua"))()
 ```
 A Luau script currently in development, using **[Obsidian Ui](https://github.com/deividcomsono/Obsidian)**
+**Supports:** __PC & Mobile (IOS, Android, ETC)__
 # Supported Games
 
 - **[Blackout: Revival](https://www.roblox.com/games/8767500166)**                                                                                         
