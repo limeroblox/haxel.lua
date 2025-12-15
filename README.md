@@ -1,14 +1,14 @@
 # MeowWare.lua
+
 ```luau
-loadstring()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/main.lua"))()
 ```
+A Luau script currently in development, using **[Obsidian Ui](https://github.com/deividcomsono/Obsidian)**
+# Supported Games
 
-A luau script in dev used by ObsidianUi: https://github.com/deividcomsono/Obsidian
+- Blackout: Revival
+*(and its copies, except PDS)*
 
-## Supported Games:
+- Transfur Outbreak
 
-Blackout: Revival (and its copies, execpt for PDS)
- 
-Transfur Outbreak
-
-Pressure
+- Pressure
