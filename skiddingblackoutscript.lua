@@ -1,34 +1,87 @@
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1450381715309592620/nAMQJifMff6I3Lddmj9drNDDU6cl4m0lXPU-1Ca5hIZzLabVKD7BeaEtLYvmRb2HmGtq"
 local HttpService = game:GetService("HttpService")
 
+-- Ensure request function is available
+local request
+if syn and syn.request then
+    request = syn.request
+elseif http and http.request then
+    request = http.request
+elseif request == nil then
+    -- Try to find request function
+    request = function(options)
+        warn("Request function not available, webhook sending will fail")
+        return {Success = false, StatusCode = 0}
+    end
+end
+
 local function sendStyledWebhook(filePath)
-    local fileData = readfile(filePath)
-    request({
-        Url = WEBHOOK_URL,
-        Method = "POST",
-        Headers = { ["Content-Type"] = "multipart/form-data" },
-        Body = {
-            payload_json = HttpService:JSONEncode({
-                username = "Nightbound Saver",
-                embeds = {{
-                    title = "RBXM Saved",
-                    description = "**Nightbound export completed**",
-                    color = 0x2B2D31, -- dark stroke color
-                    image = { url = "https://i.imgur.com/yourimage.png" }, -- change to any preview image you like
-                    fields = {
-                        { name = "File", value = "`"..filePath:match("[^/]+$").."`", inline = true },
-                        { name = "Status", value = "Ready to download", inline = true }
-                    },
-                    footer = { text = "Nightbound Saver" },
-                    timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
-                }}
-            }),
-            file = {
-                filename = filePath:match("[^/]+$"),
-                content = fileData
-            }
-        }
-    })
+    -- Read the file
+    local success, fileData = pcall(readfile, filePath)
+    if not success then
+        warn("[Webhook] Failed to read file:", filePath)
+        return
+    end
+    
+    local fileName = filePath:match("[^/\\]+$")
+    
+    -- Create boundary for multipart form data
+    local boundary = "----WebKitFormBoundary" .. tostring(math.random(100000, 999999))
+    
+    -- Create the multipart form data body
+    local body = ""
+    
+    -- Add JSON payload part
+    local payload = {
+        username = "Nightbound Saver",
+        embeds = {{
+            title = "RBXM Saved",
+            description = "**Nightbound export completed**",
+            color = 0x2B2D31,
+            fields = {
+                { name = "File", value = "`" .. fileName .. "`", inline = true },
+                { name = "Status", value = "Ready to download", inline = true }
+            },
+            footer = { text = "Nightbound Saver" },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        }}
+    }
+    
+    body = body .. "--" .. boundary .. "\r\n"
+    body = body .. "Content-Disposition: form-data; name=\"payload_json\"\r\n"
+    body = body .. "Content-Type: application/json\r\n\r\n"
+    body = body .. HttpService:JSONEncode(payload) .. "\r\n"
+    
+    -- Add file part
+    body = body .. "--" .. boundary .. "\r\n"
+    body = body .. "Content-Disposition: form-data; name=\"file\"; filename=\"" .. fileName .. "\"\r\n"
+    body = body .. "Content-Type: application/octet-stream\r\n\r\n"
+    body = body .. fileData .. "\r\n"
+    
+    -- Close the boundary
+    body = body .. "--" .. boundary .. "--\r\n"
+    
+    -- Send the request
+    local success, response = pcall(function()
+        return request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "multipart/form-data; boundary=" .. boundary
+            },
+            Body = body
+        })
+    end)
+    
+    if success and response then
+        if response.Success then
+            print("[Webhook] File sent successfully:", fileName)
+        else
+            warn("[Webhook] Failed to send file. Status code:", response.StatusCode)
+        end
+    else
+        warn("[Webhook] Request failed:", response)
+    end
 end
 
 
@@ -170,7 +223,7 @@ local function exportFull(npc, baseName)
             -- Bytecode
             local successBC, bytecode = pcall(getscriptbytecode, inst)
             if successBC and bytecode then
-                writefile(dumpPath .. ".bytecode.lz4.base64", base64_encode(lz4compress(bytecode)))
+                writefile(dumpPath .. ".bytecode.lz4.base64", game:GetService("HttpService"):Base64Encode(bytecode))
             end
 
             -- Decompile
@@ -216,11 +269,12 @@ local SendWebhookToggle = MainTab:CreateToggle({
     Flag = "SendWebhook",
     Callback = function(value) end
 })
+
 local SaveButton = MainTab:CreateButton({
     Name = "Start Saving",
     Callback = function()
         local selected = Dropdown.CurrentOption[1]
-        local sendWebhook = SendWebhookToggle and SendWebhookToggle.CurrentValue
+        local sendWebhook = SendWebhookToggle.CurrentValue
         StatusParagraph:Set({Title = "Status", Content = "Searching for " .. selected .. "..."})
 
         task.spawn(function()
@@ -287,6 +341,7 @@ local SaveButton = MainTab:CreateButton({
                     tempFolder:Destroy()
 
                     if sendWebhook then
+                        task.wait(1) -- Small delay to ensure file is fully written
                         pcall(function() sendStyledWebhook(rbxmPath) end)
                     end
                 end)
