@@ -28,7 +28,10 @@ local Dropdown = MainTab:CreateDropdown({
         "Nightbound Voidshackle",
         "Nightbound Shademirror",
         "Nightbound Dreadcoil",
-        "Nightbound Wraith" -- added for testing
+        "Nightbound Wraith", -- added for testing
+        "Nightbound Echo",
+        "Nightbound Pyreblast",
+        "Nightbound Vapormaw"
     },
     CurrentOption = {"Nightbound Wraith"}, -- default now for testing
     MultipleOptions = false,
