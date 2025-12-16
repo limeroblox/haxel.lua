@@ -15,8 +15,8 @@ elseif request == nil then
     end
 end
 
-local function sendStyledWebhook(filePath)
-    -- First check if file exists
+-- Function to send file to Discord webhook using proper file upload
+local function sendFileToWebhook(filePath, npcName)
     if not isfile(filePath) then
         warn("[Webhook] File does not exist:", filePath)
         return false
@@ -29,7 +29,6 @@ local function sendStyledWebhook(filePath)
         return false
     end
     
-    -- Check if file is empty
     if #fileData == 0 then
         warn("[Webhook] File is empty:", filePath)
         return false
@@ -37,7 +36,107 @@ local function sendStyledWebhook(filePath)
     
     local fileName = filePath:match("[^/\\]+$")
     local fileSizeKB = math.floor(#fileData / 1024 * 100) / 100
-    print("[Webhook] Attempting to send file:", fileName, "Size:", #fileData, "bytes")
+    
+    print("[Webhook] Uploading:", fileName, "Size:", #fileData, "bytes")
+    
+    -- Create form data for Discord
+    local boundary = "----WebKitFormBoundary" .. tostring(math.random(100000, 999999))
+    
+    -- Build the form data properly
+    local formData = {}
+    
+    -- JSON payload part
+    -- Create the payload
+    local payload = {
+        username = "Haxel's Cool Webhook",
+        embeds = {{
+            title = "RBXM Saved",
+            description = "**Export Completed**",
+            color = 0x2B2D31,
+            fields = {
+                { name = "File", value = "`" .. fileName .. "`", inline = true },
+                { name = "Size", value = fileSizeKB .. " KB", inline = true },
+                { name = "Type", value = filePath:match("%.(.+)$") or "rbxm", inline = true }
+            },
+            thumbnail = { url = "https://static.wikitide.net/blackoutwiki/5/54/Flare.png" }, 
+            footer = { text = "Saveinstance()" },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        }}
+    }
+    
+    -- Create the multipart body
+    local body = ""
+    
+    -- Add JSON payload
+    body = body .. "--" .. boundary .. "\r\n"
+    body = body .. 'Content-Disposition: form-data; name="payload_json"\r\n'
+    body = body .. "Content-Type: application/json\r\n\r\n"
+    body = body .. HttpService:JSONEncode(payload) .. "\r\n"
+    
+    -- Add file content
+    body = body .. "--" .. boundary .. "\r\n"
+    body = body .. 'Content-Disposition: form-data; name="file"; filename="' .. fileName .. '"\r\n'
+    body = body .. "Content-Type: application/octet-stream\r\n\r\n"
+    
+    -- Combine everything
+    local fullBody = body .. fileData .. "\r\n--" .. boundary .. "--\r\n"
+    
+    -- Send the request
+    local success, response = pcall(function()
+        return request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "multipart/form-data; boundary=" .. boundary
+            },
+            Body = fullBody
+        })
+    end)
+    
+    if success and response then
+        if response.Success then
+            print("[Webhook] ✓ File uploaded successfully to Discord!")
+            
+            -- Try to parse Discord's response
+            if response.Body then
+                local ok, data = pcall(HttpService.JSONDecode, HttpService, response.Body)
+                if ok and data then
+                    print("[Webhook] Discord response: File uploaded")
+                    if data.attachments and data.attachments[1] then
+                        print("[Webhook] File URL:", data.attachments[1].url)
+                    end
+                end
+            end
+            
+            return true
+        else
+            warn("[Webhook] ✗ Discord rejected upload. Status:", response.StatusCode)
+            if response.Body then
+                warn("[Webhook] Error response:", response.Body)
+                -- Check for common Discord errors
+                if response.Body:find("Invalid Form Body") then
+                    warn("[Webhook] This is usually due to malformed form data")
+                elseif response.Body:find("rate limited") then
+                    warn("[Webhook] You're being rate limited! Wait a bit")
+                end
+            end
+            return false
+        end
+    else
+        warn("[Webhook] ✗ Request failed:", response)
+        return false
+    end
+end
+
+-- Alternative: Simple webhook without file attachment (just notification)
+local function sendSimpleNotification(npcName, filePath, sendFile)
+    local fileName = filePath:match("[^/\\]+$")
+    local fileSizeKB = 0
+    
+    if isfile(filePath) then
+        local fileData = readfile(filePath)
+        fileSizeKB = math.floor(#fileData / 1024 * 100) / 100
+    end
     
     -- Create the payload
     local payload = {
@@ -57,74 +156,18 @@ local function sendStyledWebhook(filePath)
         }}
     }
     
-    -- Encode payload to JSON
-    local payloadJson = HttpService:JSONEncode(payload)
-    
-    -- Send the request with proper multipart/form-data
-    local requestSuccess, response = pcall(function()
-        -- Use HttpService directly for better multipart support
-        local body = ""
-        local boundary = "----WebKitFormBoundary" .. tostring(math.random(100000, 999999))
-        
-        -- Build the multipart body properly
-        body = body .. "--" .. boundary .. "\r\n"
-        body = body .. "Content-Disposition: form-data; name=\"payload_json\"\r\n"
-        body = body .. "Content-Type: application/json\r\n\r\n"
-        body = body .. payloadJson .. "\r\n"
-        
-        body = body .. "--" .. boundary .. "\r\n"
-        body = body .. "Content-Disposition: form-data; name=\"file\"; filename=\"" .. fileName .. "\"\r\n"
-        body = body .. "Content-Type: application/octet-stream\r\n\r\n"
-        
-        -- Convert body to bytes and append file data
-        local bodyBytes = string.byte(body, 1, #body)
-        local fileBytes = string.byte(fileData, 1, #fileData)
-        
-        -- Combine bytes
-        local combinedBytes = {}
-        for i = 1, #bodyBytes do
-            combinedBytes[#combinedBytes + 1] = bodyBytes[i]
-        end
-        for i = 1, #fileBytes do
-            combinedBytes[#combinedBytes + 1] = fileBytes[i]
-        end
-        
-        -- Add closing boundary
-        local closing = "\r\n--" .. boundary .. "--\r\n"
-        local closingBytes = string.byte(closing, 1, #closing)
-        for i = 1, #closingBytes do
-            combinedBytes[#combinedBytes + 1] = closingBytes[i]
-        end
-        
-        -- Convert back to string
-        local finalBody = string.char(table.unpack(combinedBytes))
-        
+    local success, response = pcall(function()
         return request({
             Url = WEBHOOK_URL,
             Method = "POST",
             Headers = {
-                ["Content-Type"] = "multipart/form-data; boundary=" .. boundary
+                ["Content-Type"] = "application/json"
             },
-            Body = finalBody
+            Body = HttpService:JSONEncode(payload)
         })
     end)
     
-    if requestSuccess and response then
-        if response.Success then
-            print("[Webhook] ✓ File sent successfully:", fileName)
-            print("[Webhook] Response:", response.Body or "No response body")
-            return true
-        else
-            warn("[Webhook] ✗ Failed to send file. Status code:", response.StatusCode)
-            if response.Body then
-                warn("[Webhook] Response body:", response.Body)
-            end
-            return false
-        end
-    else
-        warn("[Webhook] ✗ Request failed:", response)
-        return false
-    end
+    return success and response and response.Success
 end
 
 
@@ -134,7 +177,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Nightbound Saver",
     LoadingTitle = "Nightbound Saver",
-    LoadingSubtitle = "by fucking HAXEL",
+    LoadingSubtitle = "by HAXEL",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "NightboundSaver",
@@ -194,31 +237,35 @@ else
     StatusParagraph:Set({Title = "Status", Content = "Native saveinstance ready"})
 end
 
---// BUTTON
-local SendWebhookToggle = MainTab:CreateToggle({
-    Name = "Send to webhook when saved?",
-    CurrentValue = false,
-    Flag = "SendWebhook",
+--// WEBHOOK SETTINGS
+local WebhookMode = MainTab:CreateDropdown({
+    Name = "Webhook Mode",
+    Options = {
+        "Auto Upload to Discord",
+        "Notification Only",
+        "Disabled"
+    },
+    CurrentOption = {"Auto Upload to Discord"},
+    MultipleOptions = false,
+    Flag = "WebhookMode",
     Callback = function(value) end
 })
 
--- Function to save NPC with proper syntax handling
+-- Function to save NPC
 local function saveNPC(npc, filePath, baseName)
     local success = false
     
     if isNativeSave then
-        -- Try different syntaxes for native saveinstance
         local originalThread
         if setthreadidentity then
             originalThread = getthreadidentity and getthreadidentity() or 2
             setthreadidentity(7)
         end
         
-        -- Try various saveinstance syntaxes
         local saveAttempts = {
-            function() saveinstance_func(filePath) end, -- Standard
-            function() saveinstance_func(npc, filePath) end, -- With object first
-            function() saveinstance_func({Objects = {npc}, FileName = filePath}) end -- Table format
+            function() saveinstance_func({Objects = {npc}, FileName = filePath}) end,
+            function() saveinstance_func(npc, filePath) end,
+            function() saveinstance_func(filePath) end
         }
         
         for i, attempt in ipairs(saveAttempts) do
@@ -236,16 +283,15 @@ local function saveNPC(npc, filePath, baseName)
             setthreadidentity(originalThread)
         end
     else
-        -- USSI format
         local ok, err = pcall(function()
             saveinstance_func({
                 Object = npc,
                 FileName = baseName .. ".rbxm",
                 Mode = "Model",
                 Decompile = false,
-                IgnoreNotArchivable = true, -- Changed to true to skip unarchivable objects
+                IgnoreNotArchivable = true,
                 ShowStatus = false,
-                Path = "NightboundExports/SavedNPCs"
+                Path = "NightboundExports"
             })
         end)
         success = ok
@@ -257,268 +303,284 @@ local function saveNPC(npc, filePath, baseName)
     return success
 end
 
+-- Main Save Button
 local SaveButton = MainTab:CreateButton({
-    Name = "Start Saving",
+    Name = "📥 Save Selected Nightbound",
     Callback = function()
         local selected = Dropdown.CurrentOption[1]
-        local sendWebhook = SendWebhookToggle.CurrentValue
-        StatusParagraph:Set({Title = "Status", Content = "Searching for " .. selected .. "..."})
+        local webhookMode = WebhookMode.CurrentOption[1]
+        local sendWebhook = webhookMode ~= "Disabled"
+        local autoUpload = webhookMode == "Auto Upload to Discord"
+        
+        StatusParagraph:Set({Title = "Status", Content = "🔍 Searching for " .. selected .. "..."})
 
         task.spawn(function()
-            local foundNPCs = {}
+            local foundNPC = nil
             local successFind, errFind = pcall(function()
                 local allNPCs = workspace:FindFirstChild("NPCs")
                 if allNPCs then
                     for _, folder in {allNPCs:FindFirstChild("Hostile"), allNPCs:FindFirstChild("Custom")} do
                         if folder then
-                            for _, obj in folder:GetChildren() do
-                                if obj:IsA("Model") and obj.Name == selected then
-                                    table.insert(foundNPCs, obj)
-                                end
+                            foundNPC = folder:FindFirstChild(selected)
+                            if foundNPC then
+                                break
                             end
                         end
                     end
                 end
             end)
 
-            if not successFind then
-                warn("[Nightbound Saver] Error finding NPCs:", errFind)
-                StatusParagraph:Set({Title = "Status", Content = "Error finding NPCs. Check console."})
-                return
-            end
-
-            if #foundNPCs == 0 then
-                warn("[Nightbound Saver] No NPCs found for:", selected)
-                StatusParagraph:Set({Title = "Status", Content = selected .. " not found"})
-                return
-            end
-
-            StatusParagraph:Set({Title = "Status", Content = "Found " .. #foundNPCs .. " NPC(s), saving..."})
-
-            -- Create base directory
-            local baseExportDir = "NightboundExports/SavedNPCs"
-            if not isfolder("NightboundExports") then
-                makefolder("NightboundExports")
-            end
-            if not isfolder(baseExportDir) then 
-                makefolder(baseExportDir) 
-            end
-
-            local savedFiles = 0
-            local webhookResults = {}
-            
-            for i, npc in ipairs(foundNPCs) do
-                local baseName = selected:gsub(" ", "") .. "_" .. i
-                local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
-                
-                print("[Saver] Attempting to save:", baseName, "to", rbxmPath)
-                
-                -- First delete old file if it exists
-                if isfile(rbxmPath) then
-                    pcall(delfile, rbxmPath)
-                end
-
-                local ok, err = pcall(function()
-                    StatusParagraph:Set({Title = "Status", Content = "Saving " .. baseName .. "..."})
-                    
-                    -- Clone the NPC and ensure it's archivable
-                    local npcClone = npc:Clone()
-                    
-                    -- Make everything in the clone archivable
-                    for _, descendant in pairs(npcClone:GetDescendants()) do
-                        pcall(function()
-                            descendant.Archivable = true
-                        end)
-                    end
-                    
-                    npcClone.Archivable = true
-                    
-                    -- Save the NPC
-                    local saveSuccess = saveNPC(npcClone, rbxmPath, baseName)
-                    
-                    -- Clean up the clone
-                    npcClone:Destroy()
-                    
-                    if saveSuccess then
-                        -- Wait a bit for file to be written
-                        for waitAttempt = 1, 10 do
-                            task.wait(0.5)
-                            if isfile(rbxmPath) then
-                                local fileSize
-                                pcall(function()
-                                    fileSize = #readfile(rbxmPath)
-                                end)
-                                
-                                if fileSize and fileSize > 100 then -- Ensure file has content
-                                    savedFiles = savedFiles + 1
-                                    print("[Saver] ✓ Successfully saved:", rbxmPath, "Size:", fileSize, "bytes")
-                                    
-                                    -- Send webhook if enabled
-                                    if sendWebhook then
-                                        StatusParagraph:Set({Title = "Status", Content = "Sending webhook for " .. baseName .. "..."})
-                                        task.wait(1) -- Small delay
-                                        
-                                        local webhookSuccess = sendStyledWebhook(rbxmPath)
-                                        table.insert(webhookResults, {
-                                            name = baseName,
-                                            success = webhookSuccess
-                                        })
-                                    end
-                                    break
-                                end
-                            end
-                            
-                            if waitAttempt == 10 then
-                                warn("[Saver] File not created or empty after 5 seconds:", rbxmPath)
-                            end
-                        end
-                    else
-                        warn("[Saver] Save function failed for:", baseName)
-                    end
-                end)
-
-                if not ok then
-                    warn("[Nightbound Saver] Error exporting " .. baseName .. ":", err)
-                    StatusParagraph:Set({Title = "Status", Content = "Error exporting " .. baseName})
-                elseif savedFiles > 0 then
-                    Rayfield:Notify({Title = "Success", Content = "Saved " .. baseName, Duration = 3})
-                end
-            end
-
-            -- Final status update
-            local statusMsg = "Done! Saved " .. savedFiles .. "/" .. #foundNPCs .. " NPC(s)"
-            
-            if sendWebhook and #webhookResults > 0 then
-                local successfulWebhooks = 0
-                for _, result in ipairs(webhookResults) do
-                    if result.success then
-                        successfulWebhooks = successfulWebhooks + 1
-                    end
-                end
-                statusMsg = statusMsg .. " | Webhooks: " .. successfulWebhooks .. "/" .. #webhookResults .. " sent"
-            end
-            
-            StatusParagraph:Set({Title = "Status", Content = statusMsg})
-            
-            -- Show final notification
-            if savedFiles > 0 then
+            if not successFind or not foundNPC then
+                StatusParagraph:Set({Title = "Status", Content = "❌ " .. selected .. " not found"})
                 Rayfield:Notify({
-                    Title = "Export Complete",
-                    Content = "Saved " .. savedFiles .. " NPC(s) to NightboundExports/SavedNPCs",
+                    Title = "NPC Not Found",
+                    Content = "Check if the NPC is spawned in-game",
+                    Duration = 5
+                })
+                return
+            end
+
+            StatusParagraph:Set({Title = "Status", Content = "✅ Found " .. selected .. ", preparing save..."})
+
+            -- Create export directory
+            local baseExportDir = "NightboundExports"
+            if not isfolder(baseExportDir) then
+                makefolder(baseExportDir)
+            end
+
+            -- Create filename
+            local baseName = selected:gsub(" ", "")
+            local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
+            
+            -- Delete old file if it exists
+            if isfile(rbxmPath) then
+                pcall(delfile, rbxmPath)
+            end
+
+            -- Clone and prepare NPC
+            local npcClone = foundNPC:Clone()
+            for _, descendant in pairs(npcClone:GetDescendants()) do
+                pcall(function()
+                    descendant.Archivable = true
+                end)
+            end
+            npcClone.Archivable = true
+
+            -- Save the NPC
+            StatusParagraph:Set({Title = "Status", Content = "💾 Saving " .. selected .. " to file..."})
+            
+            local saveSuccess = saveNPC(npcClone, rbxmPath, baseName)
+            npcClone:Destroy()
+
+            if not saveSuccess then
+                StatusParagraph:Set({Title = "Status", Content = "❌ Failed to save " .. selected})
+                Rayfield:Notify({
+                    Title = "Save Failed",
+                    Content = "Saveinstance function failed",
+                    Duration = 8
+                })
+                return
+            end
+
+            -- Wait for file to be written
+            local fileSaved = false
+            local fileSize = 0
+            
+            for waitAttempt = 1, 30 do
+                task.wait(0.5)
+                if isfile(rbxmPath) then
+                    local data = readfile(rbxmPath)
+                    if #data > 100 then
+                        fileSaved = true
+                        fileSize = #data
+                        break
+                    end
+                end
+            end
+
+            if not fileSaved then
+                StatusParagraph:Set({Title = "Status", Content = "❌ File not created properly"})
+                return
+            end
+
+            -- File saved successfully
+            local fileSizeKB = math.floor(fileSize / 1024 * 100) / 100
+            StatusParagraph:Set({Title = "Status", Content = "✅ Saved " .. selected .. " (" .. fileSizeKB .. " KB)"})
+
+            -- Handle webhook
+            if sendWebhook then
+                StatusParagraph:Set({Title = "Status", Content = "📤 Sending to Discord..."})
+                
+                if autoUpload then
+                    -- Try to auto-upload the file
+                    local uploadSuccess = sendFileToWebhook(rbxmPath, selected)
+                    
+                    if uploadSuccess then
+                        StatusParagraph:Set({Title = "Status", Content = "✅ File uploaded to Discord!"})
+                        Rayfield:Notify({
+                            Title = "Complete!",
+                            Content = selected .. " saved and uploaded to Discord",
+                            Duration = 8
+                        })
+                    else
+                        -- Fallback to notification only
+                        sendSimpleNotification(selected, rbxmPath, false)
+                        StatusParagraph:Set({Title = "Status", Content = "✅ Saved locally (upload failed)"})
+                        Rayfield:Notify({
+                            Title = "Saved Locally",
+                            Content = selected .. " saved to NightboundExports folder\n(Upload to Discord failed)",
+                            Duration = 8
+                        })
+                    end
+                else
+                    -- Notification only mode
+                    sendSimpleNotification(selected, rbxmPath, true)
+                    StatusParagraph:Set({Title = "Status", Content = "✅ Notification sent to Discord"})
+                    Rayfield:Notify({
+                        Title = "Saved with Notification",
+                        Content = selected .. " saved and notification sent",
+                        Duration = 8
+                    })
+                end
+            else
+                -- No webhook
+                Rayfield:Notify({
+                    Title = "Saved Locally",
+                    Content = selected .. " saved to NightboundExports folder\n(" .. fileSizeKB .. " KB)",
                     Duration = 8
                 })
             end
+            
+            -- Final status
+            local statusText = "✅ " .. selected .. " saved (" .. fileSizeKB .. " KB)"
+            if sendWebhook then
+                statusText = statusText .. (autoUpload and " 📤 Uploaded" or " 💬 Notified")
+            end
+            StatusParagraph:Set({Title = "Status", Content = statusText})
         end)
     end,
 })
 
--- Add a test webhook button for debugging
+-- Test Webhook Button
 local DebugButton = MainTab:CreateButton({
-    Name = "Test Webhook (Debug)",
+    Name = "Test Discord Webhook",
     Callback = function()
-        StatusParagraph:Set({Title = "Status", Content = "Testing webhook..."})
+        StatusParagraph:Set({Title = "Status", Content = "Testing webhook connection..."})
         
-        -- Create a test file
-        local testDir = "NightboundExports"
-        if not isfolder(testDir) then makefolder(testDir) end
+        -- Create the payload
+    local payload = {
+        username = "Haxel's Cool Webhook",
+        embeds = {{
+            title = "Test",
+            description = "**HTTP Connection Went Through**",
+            color = 0x2B2D31,
+            fields = {
+                { name = "File", value = "`" .. fileName .. "`", inline = true },
+                { name = "Size", value = fileSizeKB .. " KB", inline = true },
+                { name = "Type", value = filePath:match("%.(.+)$") or "rbxm", inline = true }
+            },
+            thumbnail = { url = "https://static.wikitide.net/blackoutwiki/5/54/Flare.png" }, 
+            footer = { text = "Saveinstance()" },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        }}
+    }
         
-        local testFilePath = testDir .. "/test_file.txt"
-        writefile(testFilePath, "This is a test file created at " .. os.date() .. "\nNightbound Saver Webhook Test")
+        local success, response = pcall(function()
+            return request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = HttpService:JSONEncode(payload)
+            })
+        end)
         
-        StatusParagraph:Set({Title = "Status", Content = "Sending test webhook..."})
-        
-        local success = sendStyledWebhook(testFilePath)
-        if success then
-            StatusParagraph:Set({Title = "Status", Content = "Test webhook sent successfully!"})
+        if success and response and response.Success then
+            StatusParagraph:Set({Title = "Status", Content = "✅ Webhook test successful!"})
             Rayfield:Notify({
                 Title = "Webhook Test",
-                Content = "Test webhook sent successfully!",
+                Content = "Discord webhook is working correctly",
                 Duration = 5
             })
         else
-            StatusParagraph:Set({Title = "Status", Content = "Test webhook failed. Check console."})
+            StatusParagraph:Set({Title = "Status", Content = "❌ Webhook test failed"})
             Rayfield:Notify({
                 Title = "Webhook Test Failed",
-                Content = "Check console for error details",
+                Content = "Check console for details",
                 Duration = 5
             })
         end
-        
-        -- Clean up test file
-        pcall(delfile, testFilePath)
     end,
 })
 
--- Add a simple export button that doesn't use saveinstance
-local SimpleExportButton = MainTab:CreateButton({
-    Name = "Simple Export (No Saveinstance)",
+-- Quick Save All Button (for when you want to save everything at once)
+local QuickSaveButton = MainTab:CreateButton({
+    Name = "Quick Save All Nightbounds",
     Callback = function()
-        local selected = Dropdown.CurrentOption[1]
-        StatusParagraph:Set({Title = "Status", Content = "Simple export for " .. selected .. "..."})
+        StatusParagraph:Set({Title = "Status", Content = "⚠️ This will take a while..."})
         
         task.spawn(function()
-            local npc = nil
-            pcall(function()
-                local allNPCs = workspace:FindFirstChild("NPCs")
-                if allNPCs then
-                    for _, folder in {allNPCs:FindFirstChild("Hostile"), allNPCs:FindFirstChild("Custom")} do
-                        if folder then
-                            npc = folder:FindFirstChild(selected)
-                            if npc then break end
-                        end
-                    end
-                end
-            end)
-            
-            if not npc then
-                StatusParagraph:Set({Title = "Status", Content = selected .. " not found"})
+            local allNPCs = workspace:FindFirstChild("NPCs")
+            if not allNPCs then
+                StatusParagraph:Set({Title = "Status", Content = "❌ No NPCs folder found"})
                 return
             end
             
-            -- Create directory
-            if not isfolder("SimpleExports") then
-                makefolder("SimpleExports")
+            -- Create export directory
+            if not isfolder("NightboundExports") then
+                makefolder("NightboundExports")
             end
             
-            local exportPath = "SimpleExports/" .. selected:gsub(" ", "") .. "_export.txt"
-            
-            -- Simple export - just save basic info
-            local exportData = {
-                NPC_Name = npc.Name,
-                ClassName = npc.ClassName,
-                Children = #npc:GetChildren(),
-                Descendants = #npc:GetDescendants(),
-                Time = os.date(),
-                Position = tostring(npc:GetPivot().Position)
+            local savedCount = 0
+            local npcList = {
+                "Nightbound Flare", "Nightbound Shockbane", "Nightbound Voidshackle",
+                "Nightbound Shademirror", "Nightbound Dreadcoil", "Nightbound Wraith",
+                "Nightbound Echo", "Nightbound Pyreblast", "Nightbound Vapormaw"
             }
             
-            local content = "Nightbound NPC Export\n"
-            content = content .. "====================\n"
-            for key, value in pairs(exportData) do
-                content = content .. key .. ": " .. tostring(value) .. "\n"
+            for _, npcName in ipairs(npcList) do
+                StatusParagraph:Set({Title = "Status", Content = "🔍 Looking for " .. npcName .. "..."})
+                
+                local foundNPC = nil
+                for _, folder in {allNPCs:FindFirstChild("Hostile"), allNPCs:FindFirstChild("Custom")} do
+                    if folder then
+                        foundNPC = folder:FindFirstChild(npcName)
+                        if foundNPC then break end
+                    end
+                end
+                
+                if foundNPC then
+                    local baseName = npcName:gsub(" ", "")
+                    local filePath = "NightboundExports/" .. baseName .. ".rbxm"
+                    
+                    -- Save the NPC
+                    local npcClone = foundNPC:Clone()
+                    npcClone.Archivable = true
+                    for _, desc in npcClone:GetDescendants() do
+                        pcall(function() desc.Archivable = true end)
+                    end
+                    
+                    local success = saveNPC(npcClone, filePath, baseName)
+                    npcClone:Destroy()
+                    
+                    if success then
+                        savedCount = savedCount + 1
+                        print("[QuickSave] Saved:", npcName)
+                    end
+                end
+                
+                task.wait(1) -- Delay to avoid rate limiting
             end
             
-            content = content .. "\nChildren List:\n"
-            for _, child in pairs(npc:GetChildren()) do
-                content = content .. "  - " .. child.Name .. " (" .. child.ClassName .. ")\n"
-            end
-            
-            writefile(exportPath, content)
-            
-            StatusParagraph:Set({Title = "Status", Content = "Simple export complete!"})
+            StatusParagraph:Set({Title = "Status", Content = "✅ Saved " .. savedCount .. " Nightbounds"})
             Rayfield:Notify({
-                Title = "Simple Export",
-                Content = "Exported info to SimpleExports folder",
-                Duration = 5
+                Title = "Quick Save Complete",
+                Content = "Saved " .. savedCount .. " NPCs to NightboundExports",
+                Duration = 8
             })
-            
-            -- Send webhook if enabled
-            if SendWebhookToggle.CurrentValue then
-                task.wait(1)
-                sendStyledWebhook(exportPath)
-            end
         end)
     end,
 })
 
-StatusParagraph:Set({Title = "Status", Content = "Ready - Select and Start Saving"})
+StatusParagraph:Set({Title = "Status", Content = "✅ Ready - Select a Nightbound and Save"})
