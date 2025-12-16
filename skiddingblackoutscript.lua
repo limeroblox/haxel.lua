@@ -170,6 +170,7 @@ local function exportFull(npc, baseName)
 end
 
 --// BUTTON
+--// BUTTON
 local SaveButton = MainTab:CreateButton({
     Name = "Start Saving",
     Callback = function()
@@ -177,18 +178,53 @@ local SaveButton = MainTab:CreateButton({
         StatusParagraph:Set({Title = "Status", Content = "Searching for " .. selected .. "..."})
 
         task.spawn(function()
-            while true do
-                local npc = findNPC(selected)
-                if npc then
-                    local baseName = selected:gsub(" ", "")
-                    exportFull(npc, baseName)
-                    Rayfield:Notify({Title = "Success", Content = "Saved " .. selected .. " as RBXM successfully!", Duration = 5})
-                    StatusParagraph:Set({Title = "Status", Content = "Ready - Select and Start Saving"})
-                    return
-                else
-                    StatusParagraph:Set({Title = "Status", Content = selected .. " not found, retrying in " .. CHECK_DELAY .. "s..."})
-                    task.wait(CHECK_DELAY)
+            local success, npcsOrErr = pcall(function()
+                local foundNPCs = {}
+                local allNPCs = workspace:FindFirstChild("NPCs")
+                if allNPCs then
+                    for _, folder in {allNPCs:FindFirstChild("Hostile"), allNPCs:FindFirstChild("Custom")} do
+                        if folder then
+                            for _, obj in folder:GetChildren() do
+                                if obj:IsA("Model") and obj.Name == selected then
+                                    table.insert(foundNPCs, obj)
+                                end
+                            end
+                        end
+                    end
                 end
+                return foundNPCs
+            end)
+
+            if success then
+                local npcs = npcsOrErr
+                if #npcs == 0 then
+                    StatusParagraph:Set({Title = "Status", Content = selected .. " not found"})
+                    warn(selected .. " not found")
+                    return
+                end
+
+                StatusParagraph:Set({Title = "Status", Content = "Found " .. #npcs .. " NPC(s), saving..."})
+
+                for i, npc in ipairs(npcs) do
+                    local baseName = selected:gsub(" ", "") .. "_" .. i
+                    local ok, err = pcall(function()
+                        exportFull(npc, baseName)
+                    end)
+                    if not ok then
+                        warn("Error exporting NPC:", err)
+                    else
+                        Rayfield:Notify({
+                            Title = "Success",
+                            Content = "Saved " .. baseName .. " as RBXM successfully!",
+                            Duration = 5
+                        })
+                    end
+                end
+
+                StatusParagraph:Set({Title = "Status", Content = "Done saving " .. #npcs .. " NPC(s)"})
+            else
+                warn("Error finding NPCs:", npcsOrErr)
+                StatusParagraph:Set({Title = "Status", Content = "Error finding NPCs. Check console."})
             end
         end)
     end,
