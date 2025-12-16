@@ -1,3 +1,37 @@
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1450381715309592620/nAMQJifMff6I3Lddmj9drNDDU6cl4m0lXPU-1Ca5hIZzLabVKD7BeaEtLYvmRb2HmGtq"
+local HttpService = game:GetService("HttpService")
+
+local function sendStyledWebhook(filePath)
+    local fileData = readfile(filePath)
+    request({
+        Url = WEBHOOK_URL,
+        Method = "POST",
+        Headers = { ["Content-Type"] = "multipart/form-data" },
+        Body = {
+            payload_json = HttpService:JSONEncode({
+                username = "Nightbound Saver",
+                embeds = {{
+                    title = "RBXM Saved",
+                    description = "**Nightbound export completed**",
+                    color = 0x2B2D31, -- dark stroke color
+                    image = { url = "https://i.imgur.com/yourimage.png" }, -- change to any preview image you like
+                    fields = {
+                        { name = "File", value = "`"..filePath:match("[^/]+$").."`", inline = true },
+                        { name = "Status", value = "Ready to download", inline = true }
+                    },
+                    footer = { text = "Nightbound Saver" },
+                    timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+                }}
+            }),
+            file = {
+                filename = filePath:match("[^/]+$"),
+                content = fileData
+            }
+        }
+    })
+end
+
+
 --// Nightbound Saver using Rayfield Interface Suite (RBXM mode)
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -176,10 +210,17 @@ end
 --// BUTTON
 --// WHY THE FUCK DID I REWORK THIS SO MANY TIMES
 --// BUTTON
+local SendWebhookToggle = MainTab:CreateToggle({
+    Name = "Send to webhook when saved?",
+    CurrentValue = false,
+    Flag = "SendWebhook",
+    Callback = function(value) end
+})
 local SaveButton = MainTab:CreateButton({
     Name = "Start Saving",
     Callback = function()
         local selected = Dropdown.CurrentOption[1]
+        local sendWebhook = SendWebhookToggle and SendWebhookToggle.CurrentValue
         StatusParagraph:Set({Title = "Status", Content = "Searching for " .. selected .. "..."})
 
         task.spawn(function()
@@ -213,25 +254,22 @@ local SaveButton = MainTab:CreateButton({
 
             StatusParagraph:Set({Title = "Status", Content = "Found " .. #foundNPCs .. " NPC(s), saving..."})
 
-            -- Make dedicated folder for saving
             local baseExportDir = "NightboundExports/SavedNPCs"
             if not isfolder(baseExportDir) then makefolder(baseExportDir) end
 
             for i, npc in ipairs(foundNPCs) do
                 local baseName = selected:gsub(" ", "") .. "_" .. i
+                local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
+
                 local ok, err = pcall(function()
-                    -- clone NPC into temporary folder to isolate
                     local tempFolder = Instance.new("Folder")
                     tempFolder.Name = "__tempSave"
                     tempFolder.Parent = workspace
+
                     local npcClone = npc:Clone()
                     npcClone.Parent = tempFolder
-
-                    -- save only the clone
                     if setthreadidentity then pcall(setthreadidentity, 7) end
                     npcClone.Archivable = true
-
-                    local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
 
                     if isNativeSave then
                         saveinstance_func(rbxmPath)
@@ -246,19 +284,18 @@ local SaveButton = MainTab:CreateButton({
                         })
                     end
 
-                    -- clean up clone
                     tempFolder:Destroy()
+
+                    if sendWebhook then
+                        pcall(function() sendStyledWebhook(rbxmPath) end)
+                    end
                 end)
 
                 if not ok then
-                    warn("[Nightbound Saver] Error exporting NPC " .. baseName .. ":", err)
-                    StatusParagraph:Set({Title = "Status", Content = "Error exporting " .. baseName .. ", check console."})
+                    warn("[Nightbound Saver] Error exporting " .. baseName, err)
+                    StatusParagraph:Set({Title = "Status", Content = "Error exporting " .. baseName})
                 else
-                    Rayfield:Notify({
-                        Title = "Success",
-                        Content = "Saved " .. baseName .. " as RBXM successfully!",
-                        Duration = 5
-                    })
+                    Rayfield:Notify({Title = "Success", Content = "Saved " .. baseName, Duration = 5})
                 end
             end
 
@@ -266,7 +303,5 @@ local SaveButton = MainTab:CreateButton({
         end)
     end,
 })
-
-
 
 StatusParagraph:Set({Title = "Status", Content = "Ready - Select and Start Saving"})
