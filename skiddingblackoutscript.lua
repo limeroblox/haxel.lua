@@ -22,13 +22,6 @@ local function sendStyledWebhook(filePath)
         return false
     end
     
-    -- Get file size first to avoid reading huge files
-    local fileInfo = readfile and readfile(filePath, true) -- Check if it exists
-    if not fileInfo then
-        warn("[Webhook] Cannot access file:", filePath)
-        return false
-    end
-    
     -- Read the file
     local success, fileData = pcall(readfile, filePath)
     if not success then
@@ -55,7 +48,8 @@ local function sendStyledWebhook(filePath)
     local payload = {
         username = "Haxel's Cool Webhook",
         embeds = {{
-            title = "File Download Ready",
+            title = "RBXM Saved",
+            description = "**Export Completed**",
             color = 0x2B2D31,
             fields = {
                 { name = "File", value = "`" .. fileName .. "`", inline = true },
@@ -186,6 +180,61 @@ local SendWebhookToggle = MainTab:CreateToggle({
     Callback = function(value) end
 })
 
+-- Function to save NPC with proper syntax handling
+local function saveNPC(npc, filePath, baseName)
+    local success = false
+    
+    if isNativeSave then
+        -- Try different syntaxes for native saveinstance
+        local originalThread
+        if setthreadidentity then
+            originalThread = getthreadidentity and getthreadidentity() or 2
+            setthreadidentity(7)
+        end
+        
+        -- Try various saveinstance syntaxes
+        local saveAttempts = {
+            function() saveinstance_func(filePath) end, -- Standard
+            function() saveinstance_func(npc, filePath) end, -- With object first
+            function() saveinstance_func({Objects = {npc}, FileName = filePath}) end -- Table format
+        }
+        
+        for i, attempt in ipairs(saveAttempts) do
+            local ok, err = pcall(attempt)
+            if ok then
+                success = true
+                print("[Saver] Save successful with attempt #" .. i)
+                break
+            else
+                warn("[Saver] Attempt #" .. i .. " failed:", err)
+            end
+        end
+        
+        if setthreadidentity and originalThread then
+            setthreadidentity(originalThread)
+        end
+    else
+        -- USSI format
+        local ok, err = pcall(function()
+            saveinstance_func({
+                Object = npc,
+                FileName = baseName .. ".rbxm",
+                Mode = "Model",
+                Decompile = false,
+                IgnoreNotArchivable = true, -- Changed to true to skip unarchivable objects
+                ShowStatus = false,
+                Path = "NightboundExports/SavedNPCs"
+            })
+        end)
+        success = ok
+        if not ok then
+            warn("[Saver] USSI save failed:", err)
+        end
+    end
+    
+    return success
+end
+
 local SaveButton = MainTab:CreateButton({
     Name = "Start Saving",
     Callback = function()
@@ -241,74 +290,75 @@ local SaveButton = MainTab:CreateButton({
                 local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
                 
                 print("[Saver] Attempting to save:", baseName, "to", rbxmPath)
+                
+                -- First delete old file if it exists
+                if isfile(rbxmPath) then
+                    pcall(delfile, rbxmPath)
+                end
 
                 local ok, err = pcall(function()
-                    -- Create a temporary location for the NPC
-                    local tempFolder = Instance.new("Folder")
-                    tempFolder.Name = "__tempSave_" .. tostring(math.random(1000, 9999))
-                    tempFolder.Parent = workspace
-
-                    -- Clone and prepare the NPC
-                    local npcClone = npc:Clone()
-                    npcClone.Parent = tempFolder
-                    if setthreadidentity then 
-                        pcall(setthreadidentity, 7) 
-                    end
-                    npcClone.Archivable = true
-
-                    -- Save using the appropriate method
-                    if isNativeSave then
-                        StatusParagraph:Set({Title = "Status", Content = "Saving " .. baseName .. " (native)..."})
-                        local successSave = pcall(function()
-                            saveinstance_func(rbxmPath, npcClone)
-                        end)
-                        if not successSave then
-                            -- Try alternative syntax
-                            saveinstance_func(rbxmPath)
-                        end
-                    else
-                        StatusParagraph:Set({Title = "Status", Content = "Saving " .. baseName .. " (USSI)..."})
-                        saveinstance_func({
-                            Object = npcClone,
-                            FileName = baseName .. ".rbxm",
-                            Mode = "Model",
-                            Decompile = false,
-                            IgnoreNotArchivable = false,
-                            ShowStatus = false,
-                            Path = baseExportDir
-                        })
-                    end
-
-                    -- Clean up
-                    tempFolder:Destroy()
-
-                    -- Check if file was actually created
-                    task.wait(2) -- Give time for file to write
+                    StatusParagraph:Set({Title = "Status", Content = "Saving " .. baseName .. "..."})
                     
-                    if isfile(rbxmPath) then
-                        savedFiles = savedFiles + 1
-                        print("[Saver] ✓ Successfully saved:", rbxmPath)
-                        
-                        -- Send webhook if enabled
-                        if sendWebhook then
-                            StatusParagraph:Set({Title = "Status", Content = "Sending webhook for " .. baseName .. "..."})
-                            task.wait(1) -- Small delay
+                    -- Clone the NPC and ensure it's archivable
+                    local npcClone = npc:Clone()
+                    
+                    -- Make everything in the clone archivable
+                    for _, descendant in pairs(npcClone:GetDescendants()) do
+                        pcall(function()
+                            descendant.Archivable = true
+                        end)
+                    end
+                    
+                    npcClone.Archivable = true
+                    
+                    -- Save the NPC
+                    local saveSuccess = saveNPC(npcClone, rbxmPath, baseName)
+                    
+                    -- Clean up the clone
+                    npcClone:Destroy()
+                    
+                    if saveSuccess then
+                        -- Wait a bit for file to be written
+                        for waitAttempt = 1, 10 do
+                            task.wait(0.5)
+                            if isfile(rbxmPath) then
+                                local fileSize
+                                pcall(function()
+                                    fileSize = #readfile(rbxmPath)
+                                end)
+                                
+                                if fileSize and fileSize > 100 then -- Ensure file has content
+                                    savedFiles = savedFiles + 1
+                                    print("[Saver] ✓ Successfully saved:", rbxmPath, "Size:", fileSize, "bytes")
+                                    
+                                    -- Send webhook if enabled
+                                    if sendWebhook then
+                                        StatusParagraph:Set({Title = "Status", Content = "Sending webhook for " .. baseName .. "..."})
+                                        task.wait(1) -- Small delay
+                                        
+                                        local webhookSuccess = sendStyledWebhook(rbxmPath)
+                                        table.insert(webhookResults, {
+                                            name = baseName,
+                                            success = webhookSuccess
+                                        })
+                                    end
+                                    break
+                                end
+                            end
                             
-                            local webhookSuccess = sendStyledWebhook(rbxmPath)
-                            table.insert(webhookResults, {
-                                name = baseName,
-                                success = webhookSuccess
-                            })
+                            if waitAttempt == 10 then
+                                warn("[Saver] File not created or empty after 5 seconds:", rbxmPath)
+                            end
                         end
                     else
-                        warn("[Saver] ✗ File not created after save attempt:", rbxmPath)
+                        warn("[Saver] Save function failed for:", baseName)
                     end
                 end)
 
                 if not ok then
                     warn("[Nightbound Saver] Error exporting " .. baseName .. ":", err)
                     StatusParagraph:Set({Title = "Status", Content = "Error exporting " .. baseName})
-                else
+                elseif savedFiles > 0 then
                     Rayfield:Notify({Title = "Success", Content = "Saved " .. baseName, Duration = 3})
                 end
             end
@@ -374,6 +424,78 @@ local DebugButton = MainTab:CreateButton({
         
         -- Clean up test file
         pcall(delfile, testFilePath)
+    end,
+})
+
+-- Add a simple export button that doesn't use saveinstance
+local SimpleExportButton = MainTab:CreateButton({
+    Name = "Simple Export (No Saveinstance)",
+    Callback = function()
+        local selected = Dropdown.CurrentOption[1]
+        StatusParagraph:Set({Title = "Status", Content = "Simple export for " .. selected .. "..."})
+        
+        task.spawn(function()
+            local npc = nil
+            pcall(function()
+                local allNPCs = workspace:FindFirstChild("NPCs")
+                if allNPCs then
+                    for _, folder in {allNPCs:FindFirstChild("Hostile"), allNPCs:FindFirstChild("Custom")} do
+                        if folder then
+                            npc = folder:FindFirstChild(selected)
+                            if npc then break end
+                        end
+                    end
+                end
+            end)
+            
+            if not npc then
+                StatusParagraph:Set({Title = "Status", Content = selected .. " not found"})
+                return
+            end
+            
+            -- Create directory
+            if not isfolder("SimpleExports") then
+                makefolder("SimpleExports")
+            end
+            
+            local exportPath = "SimpleExports/" .. selected:gsub(" ", "") .. "_export.txt"
+            
+            -- Simple export - just save basic info
+            local exportData = {
+                NPC_Name = npc.Name,
+                ClassName = npc.ClassName,
+                Children = #npc:GetChildren(),
+                Descendants = #npc:GetDescendants(),
+                Time = os.date(),
+                Position = tostring(npc:GetPivot().Position)
+            }
+            
+            local content = "Nightbound NPC Export\n"
+            content = content .. "====================\n"
+            for key, value in pairs(exportData) do
+                content = content .. key .. ": " .. tostring(value) .. "\n"
+            end
+            
+            content = content .. "\nChildren List:\n"
+            for _, child in pairs(npc:GetChildren()) do
+                content = content .. "  - " .. child.Name .. " (" .. child.ClassName .. ")\n"
+            end
+            
+            writefile(exportPath, content)
+            
+            StatusParagraph:Set({Title = "Status", Content = "Simple export complete!"})
+            Rayfield:Notify({
+                Title = "Simple Export",
+                Content = "Exported info to SimpleExports folder",
+                Duration = 5
+            })
+            
+            -- Send webhook if enabled
+            if SendWebhookToggle.CurrentValue then
+                task.wait(1)
+                sendStyledWebhook(exportPath)
+            end
+        end)
     end,
 })
 
