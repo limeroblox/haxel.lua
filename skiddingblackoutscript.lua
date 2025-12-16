@@ -55,8 +55,7 @@ local function sendStyledWebhook(filePath)
     local payload = {
         username = "Haxel's Cool Webhook",
         embeds = {{
-            title = "RBXM Saved",
-            description = "**Export Completed**",
+            title = "File Download Ready",
             color = 0x2B2D31,
             fields = {
                 { name = "File", value = "`" .. fileName .. "`", inline = true },
