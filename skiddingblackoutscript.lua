@@ -25,6 +25,7 @@ local Dropdown = MainTab:CreateDropdown({
     Name = "Select Nightbound",
     Options = {
         "Nightbound Flare",
+        "Nightbound Shockbane",
         "Nightbound Voidshackle",
         "Nightbound Shademirror",
         "Nightbound Dreadcoil",
