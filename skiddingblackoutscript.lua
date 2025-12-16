@@ -4,7 +4,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Nightbound Saver",
     LoadingTitle = "Nightbound Saver",
-    LoadingSubtitle = "by Grok",
+    LoadingSubtitle = "by fucking HAXEL",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "NightboundSaver",
@@ -170,7 +170,7 @@ local function exportFull(npc, baseName)
 end
 
 --// BUTTON
---// BUTTON
+--// WHY THE FUCK DID I REWORK THIS SO MANY TIMES
 --// BUTTON
 local SaveButton = MainTab:CreateButton({
     Name = "Start Saving",
@@ -209,11 +209,43 @@ local SaveButton = MainTab:CreateButton({
 
             StatusParagraph:Set({Title = "Status", Content = "Found " .. #foundNPCs .. " NPC(s), saving..."})
 
+            -- Make dedicated folder for saving
+            local baseExportDir = "NightboundExports/SavedNPCs"
+            if not isfolder(baseExportDir) then makefolder(baseExportDir) end
+
             for i, npc in ipairs(foundNPCs) do
                 local baseName = selected:gsub(" ", "") .. "_" .. i
                 local ok, err = pcall(function()
-                    exportFull(npc, baseName)
+                    -- clone NPC into temporary folder to isolate
+                    local tempFolder = Instance.new("Folder")
+                    tempFolder.Name = "__tempSave"
+                    tempFolder.Parent = workspace
+                    local npcClone = npc:Clone()
+                    npcClone.Parent = tempFolder
+
+                    -- save only the clone
+                    if setthreadidentity then pcall(setthreadidentity, 7) end
+                    npcClone.Archivable = true
+
+                    local rbxmPath = baseExportDir .. "/" .. baseName .. ".rbxm"
+
+                    if isNativeSave then
+                        saveinstance_func(rbxmPath)
+                    else
+                        saveinstance_func({
+                            Object = npcClone,
+                            FileName = baseName .. ".rbxm",
+                            Mode = "Model",
+                            Decompile = false,
+                            IgnoreNotArchivable = false,
+                            ShowStatus = false,
+                        })
+                    end
+
+                    -- clean up clone
+                    tempFolder:Destroy()
                 end)
+
                 if not ok then
                     warn("[Nightbound Saver] Error exporting NPC " .. baseName .. ":", err)
                     StatusParagraph:Set({Title = "Status", Content = "Error exporting " .. baseName .. ", check console."})
@@ -226,9 +258,10 @@ local SaveButton = MainTab:CreateButton({
                 end
             end
 
-            StatusParagraph:Set({Title = "Status", Content = "Done saving " .. #foundNPCs .. " NPC(s)"})
+            StatusParagraph:Set({Title = "Status", Content = "Done saving " .. #foundNPCs .. " NPC(s) to " .. baseExportDir})
         end)
     end,
 })
+
 
 StatusParagraph:Set({Title = "Status", Content = "Ready - Select and Start Saving"})
