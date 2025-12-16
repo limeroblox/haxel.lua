@@ -53,17 +53,17 @@ local function sendStyledWebhook(filePath)
     
     -- Add JSON payload part
     local payload = {
-        username = "Nightbound Saver",
+        username = "Haxel's Cool Webhook",
         embeds = {{
             title = "RBXM Saved",
-            description = "**Nightbound export completed**",
+            description = "**Export Completed**",
             color = 0x2B2D31,
             fields = {
                 { name = "File", value = "`" .. fileName .. "`", inline = true },
-                { name = "Size", value = string.format("%.2f KB", #fileData / 1024), inline = true },
-                { name = "Status", value = "Ready to download", inline = false }
+                { name = "Size", value = string.format("%.2f KB", #fileData / 1024), inline = true }
             },
-            footer = { text = "Nightbound Saver" },
+            thumbnail = { url = "https://static.wikitide.net/blackoutwiki/5/54/Flare.png" }, 
+            footer = { text = "Saveinstance()" },
             timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
