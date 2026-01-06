@@ -2,112 +2,172 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local function waitForChildSafe(parent, name, timeout)
+	timeout = timeout or 5
+	local t = os.clock()
+	local obj = parent:FindFirstChild(name)
+	while not obj and os.clock() - t < timeout do
+		parent.ChildAdded:Wait()
+		obj = parent:FindFirstChild(name)
+	end
+	return obj
+end
+
 local function grace()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
+	local LocalPlayer = Players.LocalPlayer
+	if not LocalPlayer then return end
 
-    for _, obj in ipairs(LocalPlayer:GetDescendants()) do
-        if obj.Name == "NOW" then
-            obj:Destroy()
-        end
-    end
+	for _, obj in ipairs(LocalPlayer:GetDescendants()) do
+		if obj.Name == "NOW" then
+			obj:Destroy()
+		end
+	end
 
-    for _, child in ipairs(workspace:WaitForChild("Beacons"):GetChildren()) do
-        if child.Name == "Part" then
-            workspace:WaitForChild("Script"):WaitForChild("BeaconPickup"):FireServer(child)
-        end
-    end
+	local beacons = waitForChildSafe(workspace, "Beacons", 3)
+	local scriptFolder = waitForChildSafe(workspace, "Script", 3)
+	local beaconPickup = scriptFolder and waitForChildSafe(scriptFolder, "BeaconPickup", 3)
 
-    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-        if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-            if obj.Name:sub(1, 4) == "Send" or obj.Name:sub(1, 4) == "Kill" then
-                obj:Destroy()
-            end
-        end
-    end
+	if beacons and beaconPickup then
+		for _, child in ipairs(beacons:GetChildren()) do
+			if child.Name == "Part" then
+				beaconPickup:FireServer(child)
+			end
+		end
+	end
 
-    for _, item in ipairs(workspace:GetChildren()) do
-        if item.Name ~= "Beacons" and not item:IsA("BaseScript") then
-            if item.Name == "Rooms" then
-                for _, child in ipairs(item:GetChildren()) do
-                    child:Destroy()
-                end
-            else
-                item:Destroy()
-            end
-        end
-    end
+	for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+		if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+			local p = obj.Name:sub(1, 4)
+			if p == "Send" or p == "Kill" then
+				obj:Destroy()
+			end
+		end
+	end
+
+	for _, item in ipairs(workspace:GetChildren()) do
+		if item.Name ~= "Beacons" and not item:IsA("BaseScript") then
+			if item.Name == "Rooms" then
+				for _, child in ipairs(item:GetChildren()) do
+					child:Destroy()
+				end
+			else
+				item:Destroy()
+			end
+		end
+	end
 end
 
 local function grace2()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local root = character:WaitForChild("HumanoidRootPart")
-    local roomsFolder = workspace:WaitForChild("Rooms")
-    local roomModels = {}
-    for _, model in ipairs(roomsFolder:GetChildren()) do
-        if model:IsA("Model") then
-            local num = tonumber(model.Name)
-            if num then
-                table.insert(roomModels, { model = model, number = num })
-            end
-        end
-    end
-    for _, room in ipairs(roomModels) do
-        local roomModel = room.model
-        local vault = roomModel:FindFirstChild("VaultEntrance")
-        if vault then
-            ReplicatedStorage.TriggerPrompt:FireServer(vault:FindFirstChild("Hinged"):FindFirstChild("Cylinder"):FindFirstChild("ProximityPrompt"))
-            ReplicatedStorage.Events.EnteredSaferoom:FireServer()
-        else
-            local toDestroy = {}
-            for _, descendant in ipairs(roomModel:GetDescendants()) do
-                if descendant:IsA("BaseScript") then
-                    local target = descendant
-                    while target.Parent ~= roomModel do
-                        target = target.Parent
-                    end
-                    toDestroy[target] = true
-                end
-            end
-            for target in pairs(toDestroy) do
-                target:Destroy()
-            end
-        end
-    end
-    local safeRoom = roomsFolder:FindFirstChild("SafeRoom", true)
-    local deathTimer = workspace:FindFirstChild("DEATHTIMER")
-    table.sort(roomModels, function(a, b)
-        return a.number < b.number
-    end)
-    if safeRoom and safeRoom:IsA("Model") and not safeRoom:IsDescendantOf(roomModels[#roomModels].model) and not safeRoom:IsDescendantOf(roomModels[1].model) and deathTimer.Value <= 0 then
-        local vaultDoor = safeRoom:FindFirstChild("VaultDoor")
-        local scale = safeRoom:FindFirstChild("Scale")
-        local hitbox = scale and scale:FindFirstChild("hitbox")
-        if hitbox and hitbox:IsA("BasePart") then
-            root.CFrame = hitbox.CFrame * CFrame.Angles(0, math.rad(225), 0)
-            workspace.CurrentCamera.CFrame = root.CFrame
-        end
-    else
-        local index = #roomModels
-        if safeRoom and safeRoom:IsA("Model") and not deathTimer:GetAttribute("AUTOGO") then
-            index = math.min(11, #roomModels)
-        end
-        local highestModel = roomModels[index] and roomModels[index].model
-        local exit = highestModel and highestModel:FindFirstChild("Exit")
-        if exit and exit:IsA("BasePart") then
-            root.CFrame = exit.CFrame * CFrame.Angles(0, math.rad(45), 0)
-            workspace.CurrentCamera.CFrame = root.CFrame
-        end
-    end
-    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-        if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-            if obj.Name:sub(1,4) == "Send" or obj.Name:sub(1,4) == "Kill" then
-                obj:Destroy()
-            end
-        end
-    end
+	local player = Players.LocalPlayer
+	if not player then return end
+
+	local character = player.Character
+	if not character then
+		local ok = player.CharacterAdded:Wait()
+		character = ok
+	end
+	if not character then return end
+
+	local root = waitForChildSafe(character, "HumanoidRootPart", 3)
+	if not root then return end
+
+	local roomsFolder = workspace:FindFirstChild("Rooms")
+	if not roomsFolder then return end
+
+	local roomModels = {}
+	for _, model in ipairs(roomsFolder:GetChildren()) do
+		if model:IsA("Model") then
+			local num = tonumber(model.Name)
+			if num then
+				table.insert(roomModels, { model = model, number = num })
+			end
+		end
+	end
+
+	for _, room in ipairs(roomModels) do
+		local roomModel = room.model
+		local vault = roomModel:FindFirstChild("VaultEntrance")
+		if vault then
+			local hinged = vault:FindFirstChild("Hinged")
+			local cylinder = hinged and hinged:FindFirstChild("Cylinder")
+			local prompt = cylinder and cylinder:FindFirstChild("ProximityPrompt")
+			if prompt and ReplicatedStorage:FindFirstChild("TriggerPrompt") then
+				ReplicatedStorage.TriggerPrompt:FireServer(prompt)
+			end
+			if ReplicatedStorage:FindFirstChild("Events")
+				and ReplicatedStorage.Events:FindFirstChild("EnteredSaferoom") then
+				ReplicatedStorage.Events.EnteredSaferoom:FireServer()
+			end
+		else
+			local toDestroy = {}
+			for _, descendant in ipairs(roomModel:GetDescendants()) do
+				if descendant:IsA("BaseScript") then
+					local target = descendant
+					while target and target.Parent ~= roomModel do
+						target = target.Parent
+					end
+					if target then
+						toDestroy[target] = true
+					end
+				end
+			end
+			for target in pairs(toDestroy) do
+				target:Destroy()
+			end
+		end
+	end
+
+	if #roomModels == 0 then return end
+
+	table.sort(roomModels, function(a, b)
+		return a.number < b.number
+	end)
+
+	local safeRoom = roomsFolder:FindFirstChild("SafeRoom", true)
+	local deathTimer = workspace:FindFirstChild("DEATHTIMER")
+	local deathValue = deathTimer and deathTimer.Value or 0
+
+	if safeRoom
+		and safeRoom:IsA("Model")
+		and not safeRoom:IsDescendantOf(roomModels[#roomModels].model)
+		and not safeRoom:IsDescendantOf(roomModels[1].model)
+		and deathValue <= 0 then
+
+		local scale = safeRoom:FindFirstChild("Scale")
+		local hitbox = scale and scale:FindFirstChild("hitbox")
+		if hitbox and hitbox:IsA("BasePart") then
+			root.CFrame = hitbox.CFrame * CFrame.Angles(0, math.rad(225), 0)
+			workspace.CurrentCamera.CFrame = root.CFrame
+		end
+	else
+		local index = #roomModels
+		if safeRoom and safeRoom:IsA("Model")
+			and deathTimer
+			and not deathTimer:GetAttribute("AUTOGO") then
+			index = math.min(11, #roomModels)
+		end
+
+		local highestModel = roomModels[index] and roomModels[index].model
+		local exit = highestModel and highestModel:FindFirstChild("Exit")
+		if exit and exit:IsA("BasePart") then
+			root.CFrame = exit.CFrame * CFrame.Angles(0, math.rad(45), 0)
+			workspace.CurrentCamera.CFrame = root.CFrame
+		end
+	end
+
+	for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+		if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+			local p = obj.Name:sub(1, 4)
+			if p == "Send" or p == "Kill" then
+				obj:Destroy()
+			end
+		end
+	end
 end
+
 
 local hbGrace1, hbGrace2
 
