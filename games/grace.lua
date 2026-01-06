@@ -4,16 +4,42 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local function waitForChildSafe(parent, name, timeout)
 	timeout = timeout or 5
-	local t = os.clock()
+	local start = os.clock()
 	local obj = parent:FindFirstChild(name)
-	while not obj and os.clock() - t < timeout do
+	while not obj and os.clock() - start < timeout do
 		parent.ChildAdded:Wait()
 		obj = parent:FindFirstChild(name)
 	end
 	return obj
+end
+
+local function waitForCharacter(player, timeout)
+	timeout = timeout or 5
+	if player.Character then
+		return player.Character
+	end
+	local start = os.clock()
+	while os.clock() - start < timeout do
+		local char = player.Character
+		if char then
+			return char
+		end
+		RunService.Heartbeat:Wait()
+	end
+	return nil
+end
+
+local function neutralizeRoomScripts(roomsFolder)
+	for _, obj in ipairs(roomsFolder:GetDescendants()) do
+		if obj:IsA("BaseScript") then
+			obj.Disabled = true
+			obj:Destroy()
+		end
+	end
 end
 
 local function grace()
@@ -64,18 +90,20 @@ local function grace2()
 	local player = Players.LocalPlayer
 	if not player then return end
 
-	local character = player.Character
-	if not character then
-		local ok = player.CharacterAdded:Wait()
-		character = ok
-	end
+	local character = waitForCharacter(player, 5)
 	if not character then return end
 
 	local root = waitForChildSafe(character, "HumanoidRootPart", 3)
 	if not root then return end
 
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+
 	local roomsFolder = workspace:FindFirstChild("Rooms")
 	if not roomsFolder then return end
+
+	-- CRITICAL FIX: kill Door / Room scripts BEFORE they yield
+	neutralizeRoomScripts(roomsFolder)
 
 	local roomModels = {}
 	for _, model in ipairs(roomsFolder:GetChildren()) do
@@ -101,22 +129,6 @@ local function grace2()
 				and ReplicatedStorage.Events:FindFirstChild("EnteredSaferoom") then
 				ReplicatedStorage.Events.EnteredSaferoom:FireServer()
 			end
-		else
-			local toDestroy = {}
-			for _, descendant in ipairs(roomModel:GetDescendants()) do
-				if descendant:IsA("BaseScript") then
-					local target = descendant
-					while target and target.Parent ~= roomModel do
-						target = target.Parent
-					end
-					if target then
-						toDestroy[target] = true
-					end
-				end
-			end
-			for target in pairs(toDestroy) do
-				target:Destroy()
-			end
 		end
 	end
 
@@ -140,7 +152,7 @@ local function grace2()
 		local hitbox = scale and scale:FindFirstChild("hitbox")
 		if hitbox and hitbox:IsA("BasePart") then
 			root.CFrame = hitbox.CFrame * CFrame.Angles(0, math.rad(225), 0)
-			workspace.CurrentCamera.CFrame = root.CFrame
+			camera.CFrame = root.CFrame
 		end
 	else
 		local index = #roomModels
@@ -154,7 +166,7 @@ local function grace2()
 		local exit = highestModel and highestModel:FindFirstChild("Exit")
 		if exit and exit:IsA("BasePart") then
 			root.CFrame = exit.CFrame * CFrame.Angles(0, math.rad(45), 0)
-			workspace.CurrentCamera.CFrame = root.CFrame
+			camera.CFrame = root.CFrame
 		end
 	end
 
@@ -167,6 +179,7 @@ local function grace2()
 		end
 	end
 end
+
 
 
 local hbGrace1, hbGrace2
