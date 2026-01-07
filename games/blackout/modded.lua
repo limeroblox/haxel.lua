@@ -1,5 +1,7 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
 
+local Version = "VER: 0.0.1 [DEV]"
+
 -- [This is where all the functions are stored for toggles, buttons, sliders, color pickers, etc] --
 
 local function StartKillAll()
@@ -158,9 +160,6 @@ local function StartKillAll()
 end
 
 -- [END OF FUNCTIONS] --
-
-print(Window)
-print(Window.AddTab)
 
 local Window = Library:CreateWindow({
   AutoShow = true,
