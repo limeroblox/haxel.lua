@@ -177,7 +177,7 @@ local Tabs = {
 }
 
 local GroupBoxes = {
-	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Groupbox", "boxes")
+	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Kill All", "boxes")
 }
 local MyButton = GroupBoxes.LeftGroupBox:AddButton({
     Text = "Kill All",
