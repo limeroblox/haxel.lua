@@ -181,9 +181,7 @@ local GroupBoxes = {
 }
 local MyButton = GroupBoxes.LeftGroupBox:AddButton({
 		Text = "Kill All",
-		Func = function()
-			StartKillAll()
-		end,
+		Func = function() StartKillAll() end,
 		DoubleClick = false,
 
 		Tooltip = "Kills Everyone, You Need To Hold Out A Melee For This To Work",
