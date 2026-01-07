@@ -13,4 +13,3 @@ local Options 		= Library.Options
 local Toggles 		= Library.Toggles
 Library.ForceCheckbox = false 
 Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
-local Version = "VER: 0.0.1 [DEV]"
