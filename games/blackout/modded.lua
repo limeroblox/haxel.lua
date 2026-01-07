@@ -159,6 +159,9 @@ end
 
 -- [END OF FUNCTIONS] --
 
+print(Window)
+print(Window.AddTab)
+
 local Window = Library:CreateWindow({
   AutoShow = true,
   MobileButtonsSide = "Left",
