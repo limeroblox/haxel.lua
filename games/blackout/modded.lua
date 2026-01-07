@@ -1,11 +1,4 @@
-local repo 			= "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/" 
-local Library 		= loadstring(game:HttpGet(repo .. "Library.lua"))() 
-local ThemeManager 	= loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))() 
-local SaveManager 	= loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
-local Options 		= Library.Options
-local Toggles 		= Library.Toggles
-Library.ForceCheckbox = false 
-Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
 local Version = "VER: 0.0.1 [DEV]"
 
 -- [This is where all the functions are stored for toggles, buttons, sliders, color pickers, etc] --
