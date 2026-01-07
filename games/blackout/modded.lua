@@ -1,5 +1,7 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
 
+-- [This is where all the functions are stored for toggles, buttons, sliders, color pickers, etc] --
+
 local function StartKillAll()
 	local LOOP_DELAY = 0.01
 	local TIMEOUT = 5
@@ -155,9 +157,10 @@ local function StartKillAll()
 	end)
 end
 
+-- [END OF FUNCTIONS] --
 
 local Tabs = {
-	["Main"] = Window:AddTab("Main", "user"),
+	Main = Window:AddTab("Main", "user"),
 	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
 
