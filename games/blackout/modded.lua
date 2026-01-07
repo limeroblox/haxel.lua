@@ -179,8 +179,7 @@ local Tabs = {
 local GroupBoxes = {
 	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Groupbox", "boxes")
 }
-local Buttons = {
-	MyButton = LeftGroupBox:AddButton({
+local MyButton = LeftGroupBox:AddButton({
 		Text = "Kill All (You Need To Hold Out A Melee Weapon)",
 		Func = function()
 			StartKillall()
@@ -194,5 +193,4 @@ local Buttons = {
 		Visible = true, -- Will make the button invisible (true / false)
 		Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
 	})
-}
 
