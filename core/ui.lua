@@ -13,13 +13,4 @@ local Options 		= Library.Options
 local Toggles 		= Library.Toggles
 Library.ForceCheckbox = false 
 Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
-local Window = Library:CreateWindow({
-  AutoShow = true,
-  MobileButtonsSide = "Left",
-  Center = true,
-	Title = "MeowWare.lua",
-	Footer = "VER: 0.0.1 [DEV]",
-	Icon = 95816097006870, 
-	NotifySide = "Right",
-	ShowCustomCursor = false,
-})
+local Version = "VER: 0.0.1 [DEV]"
