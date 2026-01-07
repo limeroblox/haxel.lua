@@ -166,7 +166,7 @@ local Window = Library:CreateWindow({
   Center = true,
 	Title = "Blackout: Modded",
 	Footer = Version,
-	Icon = 131522575840104,
+	Icon = 84903466827078,
 	NotifySide = "Right",
 	ShowCustomCursor = false,
 })
