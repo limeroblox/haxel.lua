@@ -159,6 +159,8 @@ end
 
 -- [END OF FUNCTIONS] --
 
+print(Window) -- Test to see if this is nil due to Loadstring Issue
+
 local Tabs = {
 	Main = Window:AddTab("Main", "user"),
 	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
