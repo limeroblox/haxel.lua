@@ -157,7 +157,7 @@ end
 
 
 local Tabs = {
-	["Main"] = Window:AddTab("Main", ""),
+	["Main"] = Window:AddTab("Main", "user"),
 	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
 
