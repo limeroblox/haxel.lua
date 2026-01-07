@@ -182,7 +182,7 @@ local GroupBoxes = {
 local MyButton = GroupBoxes.LeftGroupBox:AddButton({
 		Text = "Kill All",
 		Func = function()
-			StartKillall()
+			StartKillAll()
 		end,
 		DoubleClick = false,
 
