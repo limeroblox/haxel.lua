@@ -159,7 +159,16 @@ end
 
 -- [END OF FUNCTIONS] --
 
-print(Window) -- Test to see if this is nil due to Loadstring Issue
+local Window = Library:CreateWindow({
+  AutoShow = true,
+  MobileButtonsSide = "Left",
+  Center = true,
+	Title = "MeowWare.lua | Blackout: Modded",
+	Footer = Version,
+	Icon = 95816097006870, 
+	NotifySide = "Right",
+	ShowCustomCursor = false,
+})
 
 local Tabs = {
 	Main = Window:AddTab("Main", "user"),
