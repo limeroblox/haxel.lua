@@ -180,15 +180,18 @@ local GroupBoxes = {
 	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Groupbox", "boxes")
 }
 local MyButton = GroupBoxes.LeftGroupBox:AddButton({
-		Text = "Kill All",
-		Func = function() StartKillAll() end,
-		DoubleClick = false,
+    Text = "Kill All",
+    Func = function()
+        StartKillAll()
+    end,
+    DoubleClick = false,
 
-		Tooltip = "Kills Everyone, You Need To Hold Out A Melee For This To Work",
-	    DisabledTooltip = "This Button Is Currently Disabled And Will NOT Work",
+    Tooltip = "Kills Everyone, You Need To Hold Out A Melee For This To Work",
+    DisabledTooltip = "This Button Is Currently Disabled And Will NOT Work",
 
-		Disabled = false, -- Will disable the button (true / false)
-		Visible = true, -- Will make the button invisible (true / false)
-		Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
+    Disabled = false, -- Will disable the button (true / false)
+    Visible  = true,  -- Will make the button invisible (true / false)
+    Risky    = false, -- Makes the text red (Default = false)
 })
+
 
