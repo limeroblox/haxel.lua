@@ -179,7 +179,7 @@ local Tabs = {
 local GroupBoxes = {
 	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Groupbox", "boxes")
 }
-local MyButton = LeftGroupBox:AddButton({
+local MyButton = GroupBoxes.LeftGroupBox:AddButton({
 		Text = "Kill All (You Need To Hold Out A Melee Weapon)",
 		Func = function()
 			StartKillall()
