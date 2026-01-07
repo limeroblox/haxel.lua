@@ -155,7 +155,27 @@ local function StartKillAll()
 	end)
 end
 
+
 local Tabs = {
 	["Main"] = Window:AddTab("Main", ""),
 	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
+
+local GroupBoxes = {
+	LeftGroupBox = Tabs.Main:AddLeftGroupbox("Groupbox", "boxes")
+}
+
+local MyButton = LeftGroupBox:AddButton({
+	Text = "Kill All (You Need To Hold Out A Melee Weapon)",
+	Func = function()
+		StartKillall()
+	end,
+	DoubleClick = false,
+
+	Tooltip = "Kills Everyone With A Infinite Range!",
+	DisabledTooltip = "This Button Is Currently Disabled And Will NOT Work",
+
+	Disabled = false, -- Will disable the button (true / false)
+	Visible = true, -- Will make the button invisible (true / false)
+	Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
+})
