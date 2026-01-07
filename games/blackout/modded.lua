@@ -192,5 +192,5 @@ local MyButton = GroupBoxes.LeftGroupBox:AddButton({
 		Disabled = false, -- Will disable the button (true / false)
 		Visible = true, -- Will make the button invisible (true / false)
 		Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
-	})
+})
 
