@@ -1,5 +1,5 @@
 loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
-local Version = "VER: 0.0.1 [DEV]"
+local Version = "MeowWare.lua | VER: 0.0.1 [DEV]"
 
 -- [This is where all the functions are stored for toggles, buttons, sliders, color pickers, etc] --
 
@@ -164,7 +164,7 @@ local Window = Library:CreateWindow({
   AutoShow = true,
   MobileButtonsSide = "Left",
   Center = true,
-	Title = "MeowWare.lua | Blackout: Modded",
+	Title = "Blackout: Modded",
 	Footer = Version,
 	Icon = 95816097006870, 
 	NotifySide = "Right",
