@@ -166,7 +166,7 @@ local Window = Library:CreateWindow({
   Center = true,
 	Title = "Blackout: Modded",
 	Footer = Version,
-	Icon = 95816097006870, 
+	Icon = "https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/X.png", 
 	NotifySide = "Right",
 	ShowCustomCursor = false,
 })
