@@ -1,11 +1,17 @@
 --// IDs
 local PlaceId = game.PlaceId
-local GameId  = game.GameId -- UniverseId (what you want for blacklists)
+local GameId = game.GameId
 
---// Blacklist (USE GAME IDS)
-local BlacklistedGames = {
-    [8614491936] = true,
-    [888888888] = true,
+-- Ensure GameId is valid
+if GameId == 0 then
+    game:GetPropertyChangedSignal("GameId"):Wait()
+    GameId = game.GameId
+end
+
+--// Blacklist (supports BOTH GameId & PlaceId)
+local BlacklistedIds = {
+    [97038201049360] = true, -- GameId
+    [888888888]      = true, -- PlaceId or GameId
 }
 
 --// Supported games (still PlaceId-based)
@@ -49,7 +55,7 @@ NotificationLibrary:SendNotification(
 )
 
 --// FIXED BLACKLIST CHECK
-if BlacklistedGames[GameId] then
+if BlacklistedGames[GameId] or BlacklistedGames[PlaceId] then
     NotificationLibrary:SendNotification(
         "Error",
         string.format(Localization.blacklisted, GameName),
