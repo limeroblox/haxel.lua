@@ -14,8 +14,6 @@ Library.ShowToggleFrameInKeybinds = true
 
 local function StartKillAll()
 	local LOOP_DELAY = 0.01
-	local SPAM_COUNT = 6          -- how many hit/swing fires per target per loop
-	local SPAM_DELAY = 0.001      -- micro wait between each fire
 	local SPOOF_RANGE = 3
 
 	--// SERVICES
@@ -98,36 +96,39 @@ local function StartKillAll()
 		return hum and hum.Health > 0
 	end
 
-	--// HARD REMOTE SPAM ATTACK
-	local function spamAttack(char)
-		local part = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
-		if not part then return end
+	--// HIT EVERYONE ONCE (STACKABLE)
+	local function HitTarget()
+		local aliveCount = 0
 
-		for i = 1, SPAM_COUNT do
-			pcall(function()
-				SwingRemote:InvokeServer()
-				HitRemote:FireServer(part, part.Position)
-			end)
-			task.wait(SPAM_DELAY)
-		end
-	end
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= LocalPlayer then
+				local char = plr.Character
+				if char and isAlive(char) then
+					aliveCount += 1
 
-	--// MAIN KILL LOOP WITH FINISHED STATE
-	task.spawn(function()
-		while true do
-			local aliveTargets = 0
+					local part =
+						char:FindFirstChild("Head")
+						or char:FindFirstChild("HumanoidRootPart")
 
-			for _, plr in ipairs(Players:GetPlayers()) do
-				if plr ~= LocalPlayer then
-					local char = plr.Character
-					if char and isAlive(char) then
-						aliveTargets += 1
-						spamAttack(char)
+					if part then
+						pcall(function()
+							SwingRemote:InvokeServer()
+							HitRemote:FireServer(part, part.Position)
+						end)
 					end
 				end
 			end
+		end
 
-			if aliveTargets == 0 then
+		return aliveCount
+	end
+
+	--// MAIN SPAM LOOP (STACKS HitTarget)
+	task.spawn(function()
+		while true do
+			local alive = HitTarget()
+
+			if alive == 0 then
 				Library:Notify({
 					Title = "Kill All",
 					Description = "Kill All Finished!",
@@ -140,6 +141,7 @@ local function StartKillAll()
 		end
 	end)
 end
+
 
 
 
