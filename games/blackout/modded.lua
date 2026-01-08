@@ -19,19 +19,11 @@ local function StartKillAll()
 	local SwingRemote = Events:WaitForChild("Swing")
 	local HitRemote = Events:WaitForChild("Hit")
 
-	--// ALERTS
-	local function alert(msg, dur)
-	    dur = dur or 3
-	    pcall(function()
-	        game.StarterGui:SetCore("SendNotification", {
-	            Title = "KillAll",
-	            Text = msg,
-	            Duration = dur
-	        })
-	    end)
-	end
-
-	alert("KillAll started (Range Spoof Mode)…")
+	Library:Notify({
+		Title = "Kill All",
+		Description = "Kill All Started",
+		Time = 2.5,
+	})
 
 	--// HRP UPDATER
 	local hrp
@@ -135,7 +127,11 @@ local function StartKillAll()
 	    attackPlayer(target)
 	    initial_count = initial_count - 1
 	    if initial_count <= 0 then
-	        alert("KillAll finished!", 5)
+	        Library:Notify({
+				Title = "Kill All",
+				Description = "Kill All Finished!",
+				Time = 2.5,
+			})
 	    end
 	end
 
