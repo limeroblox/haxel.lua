@@ -1,36 +1,20 @@
---// IDs
 local PlaceId = game.PlaceId
 local GameId  = game.GameId
-
---// Blacklist (supports BOTH GameId & PlaceId)
-local BlacklistedIds = {
+local BlacklistedGames = {
     [8614491936] = true,
-    [888888888]  = true,
 }
-
---// Supported games (PlaceId-based)
 local SupportedGames = {
     [123456789]  = "blackout_revival.lua",
     [5987922834] = "trashfur_outbreak.lua",
     [111222333]  = "pressure.lua",
 }
 
---// Services
+
 local MarketplaceService = game:GetService("MarketplaceService")
-local NotificationLibrary = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"
-))()
-
+local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
 local BaseURL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
-
---// Game info
-local Success, GameInfo = pcall(function()
-    return MarketplaceService:GetProductInfo(PlaceId)
-end)
-
+local Success, GameInfo = pcall(function() return MarketplaceService:GetProductInfo(PlaceId) end)
 local GameName = Success and GameInfo.Name or "Unknown Game"
-
---// Localization
 local Localization = {
     analyzing     = "Analyzing...",
     gameFound     = "Game Found: %s",
@@ -39,8 +23,8 @@ local Localization = {
     loadingScript = "Script Path:\n%s"
 }
 
---// HARD STOP IF BLACKLISTED (NO LOADING SEQUENCE)
-if BlacklistedIds[GameId] or BlacklistedIds[PlaceId] then
+
+if BlacklistedGames[GameId] or BlacklistedGames[PlaceId] then
     NotificationLibrary:SendNotification(
         "Error",
         string.format(Localization.blacklisted, GameName),
@@ -49,19 +33,13 @@ if BlacklistedIds[GameId] or BlacklistedIds[PlaceId] then
     return
 end
 
---// Normal flow (only runs if NOT blacklisted)
+
 NotificationLibrary:SendNotification("Info", Localization.analyzing, 3)
 task.wait(1)
+NotificationLibrary:SendNotification("Info", string.format(Localization.gameFound, GameName), 3)
 
-NotificationLibrary:SendNotification(
-    "Info",
-    string.format(Localization.gameFound, GameName),
-    3
-)
 
---// Script loader
 local ScriptName = SupportedGames[PlaceId]
-
 if ScriptName then
     local ScriptPath = BaseURL .. ScriptName
 
