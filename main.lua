@@ -5,8 +5,8 @@ local GameId = game.GameId
 
 --// Blacklist (supports BOTH GameId & PlaceId)
 local BlacklistedIds = {
-    [97038201049360] = true, -- GameId
-    [888888888]      = true, -- PlaceId or GameId
+    [8614491936] = true,
+    [888888888]  = true, 
 }
 
 --// Supported games (still PlaceId-based)
