@@ -43,49 +43,6 @@ local function StartKillAll()
 		end
 	end)
 
-	--// METAMETHOD SPOOFING
-	local mt = getrawmetatable(game)
-	setreadonly(mt, false)
-
-	local oldIndex = mt.__index
-	local oldNamecall = mt.__namecall
-
-	mt.__index = function(t, k)
-		if k == "Magnitude" and typeof(t) == "Vector3" then
-			return SPOOF_RANGE
-		end
-		return oldIndex(t, k)
-	end
-
-	mt.__namecall = function(self, ...)
-		local method = getnamecallmethod()
-		local args = { ... }
-
-		if method == "Raycast" then
-			return {
-				Instance = workspace.Terrain,
-				Position = hrp and hrp.Position or Vector3.zero,
-				Normal = Vector3.new(0, 1, 0),
-				Material = Enum.Material.Grass
-			}
-		end
-
-		if method == "FireServer" or method == "InvokeServer" then
-			for i, v in ipairs(args) do
-				if typeof(v) == "Vector3" then
-					args[i] = hrp and (hrp.Position + Vector3.new(
-						math.random(), math.random(), math.random()
-					) * SPOOF_RANGE) or Vector3.zero
-				end
-			end
-			return oldNamecall(self, unpack(args))
-		end
-
-		return oldNamecall(self, ...)
-	end
-
-	setreadonly(mt, true)
-
 	--// CHARACTER CHECKS
 	local function getHumanoid(char)
 		return char and char:FindFirstChildOfClass("Humanoid")
@@ -96,8 +53,60 @@ local function StartKillAll()
 		return hum and hum.Health > 0
 	end
 
-	--// HIT EVERYONE ONCE (STACKABLE)
+	--// HIT + SPOOF FUNCTION (STACKABLE)
+	local spoofed = false
+	local oldIndex, oldNamecall
+
 	local function HitTarget()
+		--// SETUP SPOOF ONCE
+		if not spoofed then
+			local mt = getrawmetatable(game)
+			setreadonly(mt, false)
+
+			oldIndex = mt.__index
+			oldNamecall = mt.__namecall
+
+			mt.__index = function(t, k)
+				if k == "Magnitude" and typeof(t) == "Vector3" then
+					return SPOOF_RANGE
+				end
+				return oldIndex(t, k)
+			end
+
+			mt.__namecall = function(self, ...)
+				local method = getnamecallmethod()
+				local args = { ... }
+
+				if method == "Raycast" then
+					return {
+						Instance = workspace.Terrain,
+						Position = hrp and hrp.Position or Vector3.zero,
+						Normal = Vector3.new(0, 1, 0),
+						Material = Enum.Material.Grass
+					}
+				end
+
+				if method == "FireServer" or method == "InvokeServer" then
+					for i, v in ipairs(args) do
+						if typeof(v) == "Vector3" then
+							args[i] = hrp
+								and (hrp.Position + Vector3.new(
+									math.random(), math.random(), math.random()
+								) * SPOOF_RANGE)
+								or Vector3.zero
+						end
+					end
+					return oldNamecall(self, unpack(args))
+				end
+
+				return oldNamecall(self, ...)
+			end
+
+			setreadonly(mt, true)
+			spoofed = true
+		end
+
+		--// HIT EVERYONE ONCE
 		local aliveCount = 0
 
 		for _, plr in ipairs(Players:GetPlayers()) do
@@ -123,7 +132,7 @@ local function StartKillAll()
 		return aliveCount
 	end
 
-	--// MAIN SPAM LOOP (STACKS HitTarget)
+	--// SPAM HitTarget UNTIL EVERYONE IS DEAD
 	task.spawn(function()
 		while true do
 			local alive = HitTarget()
@@ -141,6 +150,7 @@ local function StartKillAll()
 		end
 	end)
 end
+
 
 
 
