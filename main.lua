@@ -4,7 +4,7 @@ local GameId  = game.GameId -- UniverseId (what you want for blacklists)
 
 --// Blacklist (USE GAME IDS)
 local BlacklistedGames = {
-    [97038201049360] = true,
+    [8614491936] = true,
     [888888888] = true,
 }
 
