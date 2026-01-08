@@ -14,6 +14,7 @@ Library.ShowToggleFrameInKeybinds = true
 
 local function StartKillAll()
 	local LOOP_DELAY = 0.01
+	local STACK_COUNT = 6        -- how many full HitTarget passes per loop
 	local SPOOF_RANGE = 3
 
 	--// SERVICES
@@ -58,7 +59,7 @@ local function StartKillAll()
 	local oldIndex, oldNamecall
 
 	local function HitTarget()
-		--// SETUP SPOOF ONCE
+		--// SPOOF INIT (ONCE)
 		if not spoofed then
 			local mt = getrawmetatable(game)
 			setreadonly(mt, false)
@@ -106,7 +107,7 @@ local function StartKillAll()
 			spoofed = true
 		end
 
-		--// HIT EVERYONE ONCE
+		--// SINGLE HIT PASS
 		local aliveCount = 0
 
 		for _, plr in ipairs(Players:GetPlayers()) do
@@ -132,10 +133,18 @@ local function StartKillAll()
 		return aliveCount
 	end
 
-	--// SPAM HitTarget UNTIL EVERYONE IS DEAD
+	--// STACKED SPAM LOOP
 	task.spawn(function()
 		while true do
-			local alive = HitTarget()
+			local alive = 0
+
+			for i = 1, STACK_COUNT do
+				alive = HitTarget()
+				if alive == 0 then
+					break
+				end
+				task.wait() -- yield between stacks
+			end
 
 			if alive == 0 then
 				Library:Notify({
@@ -150,6 +159,7 @@ local function StartKillAll()
 		end
 	end)
 end
+
 
 
 
