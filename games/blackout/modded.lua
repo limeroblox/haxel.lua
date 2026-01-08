@@ -1,4 +1,4 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/limeroblox/meowware.lua/refs/heads/main/core/ui.lua"))()
 local Version = "MeowWare.lua | VER: 0.0.1 [DEV]"
 
 -- [This is where all the functions are stored for toggles, buttons, sliders, color pickers, etc] --
@@ -18,7 +18,7 @@ local function StartKillAll()
 	local SwingRemote = Events:WaitForChild("Swing")
 	local HitRemote = Events:WaitForChild("Hit")
 
-	Library:Notify({
+	UI.Library:Notify({
 		Title = "Kill All",
 		Description = "Kill All Started",
 		Time = 2.5,
@@ -132,7 +132,7 @@ end
 
 -- [END OF FUNCTIONS] --
 
-local Window = Library:CreateWindow({
+local Window = UI.Library:CreateWindow({
   AutoShow = true,
   MobileButtonsSide = "Left",
   Center = true,
