@@ -14,8 +14,8 @@ Library.ShowToggleFrameInKeybinds = true
 
 local function StartKillAll()
 	local LOOP_DELAY = 0.01
-	local STACK_COUNT = 6        -- how many full HitTarget passes per loop
 	local SPOOF_RANGE = 3
+	local running = true
 
 	--// SERVICES
 	local Players = game:GetService("Players")
@@ -30,14 +30,14 @@ local function StartKillAll()
 
 	Library:Notify({
 		Title = "Kill All",
-		Description = "Kill All Started",
+		Description = "Kill All Instance Started",
 		Time = 2.5,
 	})
 
-	--// HRP UPDATER
+	--// HRP TRACKER (STOPS WHEN DONE)
 	local hrp
 	task.spawn(function()
-		while true do
+		while running do
 			local char = LocalPlayer.Character
 			hrp = char and char:FindFirstChild("HumanoidRootPart")
 			task.wait()
@@ -54,67 +54,79 @@ local function StartKillAll()
 		return hum and hum.Health > 0
 	end
 
-	--// HIT + SPOOF FUNCTION (STACKABLE)
-	local spoofed = false
+	--// METATABLE SPOOF
 	local oldIndex, oldNamecall
+	local spoofed = false
 
-	local function HitTarget()
-		--// SPOOF INIT (ONCE)
-		if not spoofed then
-			local mt = getrawmetatable(game)
-			setreadonly(mt, false)
+	local function setupSpoof()
+		if spoofed then return end
+		spoofed = true
 
-			oldIndex = mt.__index
-			oldNamecall = mt.__namecall
+		local mt = getrawmetatable(game)
+		setreadonly(mt, false)
 
-			mt.__index = function(t, k)
-				if k == "Magnitude" and typeof(t) == "Vector3" then
-					return SPOOF_RANGE
-				end
-				return oldIndex(t, k)
+		oldIndex = mt.__index
+		oldNamecall = mt.__namecall
+
+		mt.__index = function(t, k)
+			if k == "Magnitude" and typeof(t) == "Vector3" then
+				return SPOOF_RANGE
 			end
-
-			mt.__namecall = function(self, ...)
-				local method = getnamecallmethod()
-				local args = { ... }
-
-				if method == "Raycast" then
-					return {
-						Instance = workspace.Terrain,
-						Position = hrp and hrp.Position or Vector3.zero,
-						Normal = Vector3.new(0, 1, 0),
-						Material = Enum.Material.Grass
-					}
-				end
-
-				if method == "FireServer" or method == "InvokeServer" then
-					for i, v in ipairs(args) do
-						if typeof(v) == "Vector3" then
-							args[i] = hrp
-								and (hrp.Position + Vector3.new(
-									math.random(), math.random(), math.random()
-								) * SPOOF_RANGE)
-								or Vector3.zero
-						end
-					end
-					return oldNamecall(self, unpack(args))
-				end
-
-				return oldNamecall(self, ...)
-			end
-
-			setreadonly(mt, true)
-			spoofed = true
+			return oldIndex(t, k)
 		end
 
-		--// SINGLE HIT PASS
-		local aliveCount = 0
+		mt.__namecall = function(self, ...)
+			local method = getnamecallmethod()
+			local args = { ... }
+
+			if method == "Raycast" then
+				return {
+					Instance = workspace.Terrain,
+					Position = hrp and hrp.Position or Vector3.zero,
+					Normal = Vector3.new(0, 1, 0),
+					Material = Enum.Material.Grass
+				}
+			end
+
+			if method == "FireServer" or method == "InvokeServer" then
+				for i, v in ipairs(args) do
+					if typeof(v) == "Vector3" then
+						args[i] = hrp
+							and (hrp.Position + Vector3.new(
+								math.random(), math.random(), math.random()
+							) * SPOOF_RANGE)
+							or Vector3.zero
+					end
+				end
+				return oldNamecall(self, unpack(args))
+			end
+
+			return oldNamecall(self, ...)
+		end
+
+		setreadonly(mt, true)
+	end
+
+	local function restoreSpoof()
+		if not spoofed then return end
+		local mt = getrawmetatable(game)
+		setreadonly(mt, false)
+		mt.__index = oldIndex
+		mt.__namecall = oldNamecall
+		setreadonly(mt, true)
+	end
+
+	--// ONE HIT WAVE
+	local function HitTarget()
+		setupSpoof()
+
+		local alive = 0
 
 		for _, plr in ipairs(Players:GetPlayers()) do
 			if plr ~= LocalPlayer then
 				local char = plr.Character
 				if char and isAlive(char) then
-					aliveCount += 1
+					alive += 1
 
 					local part =
 						char:FindFirstChild("Head")
@@ -130,26 +142,19 @@ local function StartKillAll()
 			end
 		end
 
-		return aliveCount
+		return alive
 	end
 
-	--// STACKED SPAM LOOP
+	--// KILL LOOP (AUTO-STOPS)
 	task.spawn(function()
-		while true do
-			local alive = 0
+		while running do
+			if HitTarget() == 0 then
+				running = false
+				restoreSpoof()
 
-			for i = 1, STACK_COUNT do
-				alive = HitTarget()
-				if alive == 0 then
-					break
-				end
-				task.wait() -- yield between stacks
-			end
-
-			if alive == 0 then
 				Library:Notify({
 					Title = "Kill All",
-					Description = "Kill All Finished!",
+					Description = "Kill All Finished (Instance)",
 					Time = 2.5,
 				})
 				break
@@ -159,6 +164,7 @@ local function StartKillAll()
 		end
 	end)
 end
+
 
 
 
