@@ -143,7 +143,11 @@ local function StartKillAll()
 	end
 
 	if initial_count == 0 then
-	    alert("KillAll finished!", 5)
+		Library:Notify({
+			Title = "Kill All",
+			Description = "No Targets Available To Kill",
+			Time = 2.5,
+		})
 	end
 
 	--// HANDLE NEW PLAYERS
