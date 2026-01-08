@@ -40,15 +40,6 @@ local Localization = {
     loadingScript = "Script Path:\n%s"
 }
 
---// Notify
-NotificationLibrary:SendNotification("Info", Localization.analyzing, 3)
-task.wait(1)
-NotificationLibrary:SendNotification(
-    "Info",
-    string.format(Localization.gameFound, GameName),
-    3
-)
-
 --// FIXED BLACKLIST CHECK
 if BlacklistedIds[GameId] then
     NotificationLibrary:SendNotification(
@@ -58,6 +49,16 @@ if BlacklistedIds[GameId] then
     )
     return
 end
+
+--// Notify
+NotificationLibrary:SendNotification("Info", Localization.analyzing, 3)
+task.wait(1)
+NotificationLibrary:SendNotification(
+    "Info",
+    string.format(Localization.gameFound, GameName),
+    3
+)
+
 
 --// Script loader
 local ScriptName = SupportedGames[PlaceId]
