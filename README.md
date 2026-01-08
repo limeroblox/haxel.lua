@@ -1,7 +1,7 @@
 # MeowWare.lua
 
 <p align="center">
-  <img height="400px" style="margin: 0; padding: 0" src="https://github.com/limeroblox/meowware.lua/blob/main/core/X.png" />
+  <img height="400px" style="margin: 0; padding: 0" src="https://github.com/limeroblox/meowware.lua/blob/main/core/Logo.png" />
 </p>
 
 ```luau
