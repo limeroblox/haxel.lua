@@ -2,11 +2,6 @@
 local PlaceId = game.PlaceId
 local GameId = game.GameId
 
--- Ensure GameId is valid
-if GameId == 0 then
-    game:GetPropertyChangedSignal("GameId"):Wait()
-    GameId = game.GameId
-end
 
 --// Blacklist (supports BOTH GameId & PlaceId)
 local BlacklistedIds = {
@@ -55,7 +50,7 @@ NotificationLibrary:SendNotification(
 )
 
 --// FIXED BLACKLIST CHECK
-if BlacklistedIds[GameId] or BlacklistedIds[PlaceId] then
+if BlacklistedIds[GameId] then
     NotificationLibrary:SendNotification(
         "Error",
         string.format(Localization.blacklisted, GameName),
