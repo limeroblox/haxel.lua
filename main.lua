@@ -1,5 +1,5 @@
 local BlacklistedGames = { -- Numbers Are Place Holders
-    [8614491936] = true, 
+    [97038201049360] = true, 
     [888888888] = true, 
 }
 local SupportedGames = {
