@@ -14,6 +14,8 @@ Library.ShowToggleFrameInKeybinds = true
 
 local function StartKillAll()
 	local LOOP_DELAY = 0.01
+	local SPAM_COUNT = 6          -- how many hit/swing fires per target per loop
+	local SPAM_DELAY = 0.001      -- micro wait between each fire
 	local SPOOF_RANGE = 3
 
 	--// SERVICES
@@ -28,7 +30,7 @@ local function StartKillAll()
 	local HitRemote = Events:WaitForChild("Hit")
 
 	Library:Notify({
-		Title = "",
+		Title = "Kill All",
 		Description = "Kill All Started",
 		Time = 2.5,
 	})
@@ -96,15 +98,18 @@ local function StartKillAll()
 		return hum and hum.Health > 0
 	end
 
-	--// ATTACK
-	local function attack(char)
+	--// HARD REMOTE SPAM ATTACK
+	local function spamAttack(char)
 		local part = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
 		if not part then return end
 
-		pcall(function()
-			SwingRemote:InvokeServer()
-			HitRemote:FireServer(part, part.Position)
-		end)
+		for i = 1, SPAM_COUNT do
+			pcall(function()
+				SwingRemote:InvokeServer()
+				HitRemote:FireServer(part, part.Position)
+			end)
+			task.wait(SPAM_DELAY)
+		end
 	end
 
 	--// MAIN KILL LOOP WITH FINISHED STATE
@@ -117,14 +122,14 @@ local function StartKillAll()
 					local char = plr.Character
 					if char and isAlive(char) then
 						aliveTargets += 1
-						attack(char)
+						spamAttack(char)
 					end
 				end
 			end
 
 			if aliveTargets == 0 then
 				Library:Notify({
-					Title = "",
+					Title = "Kill All",
 					Description = "Kill All Finished!",
 					Time = 2.5,
 				})
@@ -135,6 +140,7 @@ local function StartKillAll()
 		end
 	end)
 end
+
 
 
 
