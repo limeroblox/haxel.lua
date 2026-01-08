@@ -24,6 +24,16 @@ local NotificationLibrary = loadstring(game:HttpGet(
 
 local BaseURL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
 
+--// FIXED BLACKLIST CHECK
+if BlacklistedIds[GameId] then
+    NotificationLibrary:SendNotification(
+        "Error",
+        string.format(Localization.blacklisted, GameName),
+        5
+    )
+    return
+end
+
 --// Game info
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
@@ -39,16 +49,6 @@ local Localization = {
     blacklisted   = "Game is blacklisted: %s",
     loadingScript = "Script Path:\n%s"
 }
-
---// FIXED BLACKLIST CHECK
-if BlacklistedIds[GameId] then
-    NotificationLibrary:SendNotification(
-        "Error",
-        string.format(Localization.blacklisted, GameName),
-        5
-    )
-    return
-end
 
 --// Notify
 NotificationLibrary:SendNotification("Info", Localization.analyzing, 3)
