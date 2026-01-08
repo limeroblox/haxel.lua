@@ -87,7 +87,7 @@ local function StartKillAll()
 		return hum and hum.Health > 0
 	end
 
-	--// ATTACK (PURE SPAM)
+	--// ATTACK
 	local function attack(char)
 		local part = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
 		if not part then return end
@@ -98,36 +98,35 @@ local function StartKillAll()
 		end)
 	end
 
-	--// ATTACK PLAYER UNTIL DEAD (NO LIMIT)
-	local function attackPlayer(target)
-		if not target or target == LocalPlayer then return end
-
+	--// MAIN KILL LOOP WITH FINISHED STATE
+	task.spawn(function()
 		while true do
-			local char = target.Character
-			if not char or not isAlive(char) then
+			local aliveTargets = 0
+
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr ~= LocalPlayer then
+					local char = plr.Character
+					if char and isAlive(char) then
+						aliveTargets += 1
+						attack(char)
+					end
+				end
+			end
+
+			if aliveTargets == 0 then
+				UI.Library:Notify({
+					Title = "Kill All",
+					Description = "Kill All Finished!",
+					Time = 2.5,
+				})
 				break
 			end
 
-			attack(char)
 			task.wait(LOOP_DELAY)
-		end
-	end
-
-	--// EXISTING PLAYERS
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer then
-			task.spawn(attackPlayer, plr)
-			task.wait()
-		end
-	end
-
-	--// NEW PLAYERS
-	Players.PlayerAdded:Connect(function(plr)
-		if plr ~= LocalPlayer then
-			task.spawn(attackPlayer, plr)
 		end
 	end)
 end
+
 
 
 -- [END OF FUNCTIONS] --
