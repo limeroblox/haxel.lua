@@ -55,7 +55,7 @@ NotificationLibrary:SendNotification(
 )
 
 --// FIXED BLACKLIST CHECK
-if BlacklistedGames[GameId] or BlacklistedGames[PlaceId] then
+if BlacklistedIds[GameId] or BlacklistedIds[PlaceId] then
     NotificationLibrary:SendNotification(
         "Error",
         string.format(Localization.blacklisted, GameName),
