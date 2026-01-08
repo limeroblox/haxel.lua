@@ -1,31 +1,55 @@
-local BlacklistedGames = { -- Numbers Are Place Holders
-    [97038201049360] = true, 
-    [888888888] = true, 
+--// IDs
+local PlaceId = game.PlaceId
+local GameId  = game.GameId -- UniverseId (what you want for blacklists)
+
+--// Blacklist (USE GAME IDS)
+local BlacklistedGames = {
+    [97038201049360] = true,
+    [888888888] = true,
 }
+
+--// Supported games (still PlaceId-based)
 local SupportedGames = {
-    [123456789]    = "blackout_revival.lua", -- Place Holder Number
-    [5987922834]   = "trashfur_outbreak.lua",
-    [111222333]    = "pressure.lua",         -- Place Holder Number
+    [123456789]  = "blackout_revival.lua",
+    [5987922834] = "trashfur_outbreak.lua",
+    [111222333]  = "pressure.lua",
 }
-local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
-local BaseURL             = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
-local MarketplaceService  = game:GetService("MarketplaceService")
-local PlaceId             = game.PlaceId
-local Success, GameInfo   = pcall(function() return MarketplaceService:GetProductInfo(PlaceId) end)
+
+--// Services
+local MarketplaceService = game:GetService("MarketplaceService")
+local NotificationLibrary = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"
+))()
+
+local BaseURL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
+
+--// Game info
+local Success, GameInfo = pcall(function()
+    return MarketplaceService:GetProductInfo(PlaceId)
+end)
+
 local GameName = Success and GameInfo.Name or "Unknown Game"
+
+--// Localization
 local Localization = {
-    analyzing      = "Analyzing...",
-    gameFound      = "Game Found: %s",
-    noScript       = "No supported script found for: %s",
-    blacklisted    = "Game is blacklisted: %s",
-    loadingScript  = "Script Path:\n%s"
+    analyzing     = "Analyzing...",
+    gameFound     = "Game Found: %s",
+    noScript      = "No supported script found for: %s",
+    blacklisted   = "Game is blacklisted: %s",
+    loadingScript = "Script Path:\n%s"
 }
+
 --// Notify
 NotificationLibrary:SendNotification("Info", Localization.analyzing, 3)
 task.wait(1)
-NotificationLibrary:SendNotification("Info", string.format(Localization.gameFound, GameName), 3)
+NotificationLibrary:SendNotification(
+    "Info",
+    string.format(Localization.gameFound, GameName),
+    3
+)
 
-if BlacklistedGames[PlaceId] then
+--// FIXED BLACKLIST CHECK
+if BlacklistedGames[GameId] then
     NotificationLibrary:SendNotification(
         "Error",
         string.format(Localization.blacklisted, GameName),
@@ -34,6 +58,7 @@ if BlacklistedGames[PlaceId] then
     return
 end
 
+--// Script loader
 local ScriptName = SupportedGames[PlaceId]
 
 if ScriptName then
@@ -41,7 +66,7 @@ if ScriptName then
 
     NotificationLibrary:SendNotification(
         "Info",
-        string.format(Localization.loadingScript, "\\" .. ScriptPath),
+        string.format(Localization.loadingScript, ScriptPath),
         5
     )
 
