@@ -28,7 +28,7 @@ local function StartKillAll()
 	local HitRemote = Events:WaitForChild("Hit")
 
 	Library:Notify({
-		Title = "Kill All",
+		Title = "",
 		Description = "Kill All Started",
 		Time = 2.5,
 	})
@@ -124,7 +124,7 @@ local function StartKillAll()
 
 			if aliveTargets == 0 then
 				Library:Notify({
-					Title = "Kill All",
+					Title = "",
 					Description = "Kill All Finished!",
 					Time = 2.5,
 				})
