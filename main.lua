@@ -39,7 +39,7 @@ end
 
 NotificationLibrary:SendNotification(
     "Info",
-    string.format(Localization.Analyzing),
+    string.format(Localization.Analyzing.gameName),
     3
 )
 
