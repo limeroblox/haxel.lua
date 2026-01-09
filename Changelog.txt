@@ -17,3 +17,7 @@
 1/8/26
 
 --// Added Logo To Readme.md
+
+1/9/26
+
+--// Forked Obsidian Ui Library To Add Custom Image Handling (HTTPS) For Window Icon Manager
