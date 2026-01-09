@@ -28,6 +28,13 @@ local hbGrace1, hbGrace2
 
 -- [END OF FUNCTIONS] --
 
-local Window = Libary:CreateWindow({
-    
+local Window = Library:CreateWindow({
+  AutoShow = true,
+  MobileButtonsSide = "Left",
+  Center = true,
+	Title = "Grace",
+	Footer = Version,
+	Icon = 84903466827078,
+	NotifySide = "Right",
+	ShowCustomCursor = false,
 })
