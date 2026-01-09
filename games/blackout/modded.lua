@@ -189,13 +189,6 @@ local function StartKillAll()
 	end)
 end
 
-
-
-
-
-
-
-
 -- [END OF FUNCTIONS] --
 
 local Window = Library:CreateWindow({
@@ -227,9 +220,9 @@ local MyButton = GroupBoxes.LeftGroupBox:AddButton({
     Tooltip = "Kills Everyone, You Need To Hold Out A Melee For This To Work",
     DisabledTooltip = "This Button Is Currently Disabled And Will NOT Work",
 
-    Disabled = false, -- Will disable the button (true / false)
-    Visible  = true,  -- Will make the button invisible (true / false)
-    Risky    = false, -- Makes the text red (Default = false)
+    Disabled = false, 
+    Visible  = true,  
+    Risky    = false, 
 })
 
 
