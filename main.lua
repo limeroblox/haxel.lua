@@ -1,6 +1,9 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
 local BASE_SCRIPT_URL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
+local BlacklistedGames = {
+    [123456789] = true
+}
 local Localization = {
     Analyzing        = "Checking for supported script for: %s",
     ScriptFound      = "Supported script found for: %s",
