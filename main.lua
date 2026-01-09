@@ -36,8 +36,7 @@ if BlacklistedGames[GameId] or BlacklistedGames[PlaceId] then
     return
 end
 
-
-NotificationLibrary:SendNotification("Info", Localization.Analyzing, 3)
+NotificationLibrary:SendNotification("Info", string.format(Localization.Analyzing), 3)
 
 
 local scriptName = SupportedGames[PlaceId]
