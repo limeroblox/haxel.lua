@@ -10,3 +10,24 @@ Library.ForceCheckbox = false
 Library.ShowToggleFrameInKeybinds = true 
 
 -- [[ Ui Based ]] --
+
+-- [START OF FUNCTIONS] --
+
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local function grace()
+  
+end
+
+local function grace2()
+  
+end
+
+local hbGrace1, hbGrace2
+
+-- [END OF FUNCTIONS] --
+
+local Window = Libary:CreateWindow({
+    
+})
