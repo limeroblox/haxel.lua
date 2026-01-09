@@ -63,10 +63,6 @@ if scriptName then
 
     loadstring(game:HttpGet(scriptPath))()
 else
-    NotificationLibrary:SendNotification(
-        "Error",
-        "No Supported Scripts Detected For" .. gameName ", Loading Universal Script",
-        5
-    )
+    NotificationLibrary:SendNotification("Error", "No Script Found For:" .. gameName "Loading Universal Script", 3)
     loadstring(game:HttpGet(BASE_SCRIPT_URL .. "Universal.lua"))()
 end
