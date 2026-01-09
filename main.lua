@@ -1,13 +1,21 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local NotificationLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/lobox920/Notification-Library/Main/Library.lua"))()
 local BASE_SCRIPT_URL = "https://raw.githubusercontent.com/limeroblox/haxel.lua/refs/heads/main/games/"
+
+local SupportedGames = {
+    [123456789]  = "blackout_revival.lua",
+    [6508759464] = "grace.lua",
+    [5987922834] = "trashfur_outbreak.lua",
+    [111222333]  = "pressure.lua",
+}
+
 local BlacklistedGames = {
     [123456789] = true
 }
+
 local Localization = {
     Analyzing        = "Checking for supported script for: %s",
     ScriptFound      = "Supported script found for: %s",
-    NoScript         = "No supported script found for: %s",
     Blacklisted      = "Game is blacklisted: %s",
     LoadingScript    = "Loading script from:\n%s"
 }
@@ -57,7 +65,8 @@ if scriptName then
 else
     NotificationLibrary:SendNotification(
         "Error",
-        string.format(Localization.NoScript, gameName),
+        "No Supported Scripts Detected For" ..gameName ", Loading Universal Script",
         5
     )
+    loadstring(game:HttpGet(BASE_SCRIPT_URL .. "Universal.lua"))()
 end
