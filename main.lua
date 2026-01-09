@@ -14,7 +14,7 @@ local BlacklistedGames = {
 }
 
 local Localization = {
-    Analyzing        = "Checking for supported script for: %s",
+    Analyzing        = "Checking for supported script: %s",
     ScriptFound      = "Supported script found for: %s",
     Blacklisted      = "Game is blacklisted: %s",
     LoadingScript    = "Loading script from:\n%s"
@@ -39,7 +39,7 @@ end
 
 NotificationLibrary:SendNotification(
     "Info",
-    string.format(Localization.Analyzing, gameName),
+    string.format(Localization.Analyzing),
     3
 )
 
