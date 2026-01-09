@@ -16,11 +16,11 @@
 --// Changed Some Things Inside Core/Ui And Main.lua
 
 12/15/25
-
---// Reworked core/ui
---// Added Supported Platforms To .md File
---// Added EXAMPLE.lua Temporarily
-
+```diff
+! Reworked core/ui
++ Added Supported Platforms To .md File
++ Added EXAMPLE.lua Temporarily
+```
 
 12/10/25
 
