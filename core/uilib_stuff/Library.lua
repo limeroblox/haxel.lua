@@ -967,10 +967,15 @@ function Library:GiveSignal(Connection: RBXScriptConnection | RBXScriptSignal)
     return Connection
 end
 
-function IsValidCustomIcon(Icon: string)
-    return typeof(Icon) == "string"
-        and (Icon:match("rbxasset") or Icon:match("roblox%.com/asset/%?id=") or Icon:match("rbxthumb://type="))
+function IsValidCustomIcon(Icon: string) -- Now Supports Custom URL Images :D
+    return typeof(Icon) == "string" and (
+        Icon:match("rbxasset")
+        or Icon:match("roblox%.com/asset/%?id=")
+        or Icon:match("rbxthumb://type=")
+        or Icon:match("^https?://")
+    )
 end
+
 
 type Icon = {
     Url: string,
@@ -1004,17 +1009,26 @@ function Library:GetIcon(IconName: string)
 end
 
 function Library:GetCustomIcon(IconName: string)
-    if not IsValidCustomIcon(IconName) then
-        return Library:GetIcon(IconName)
-    else
+    if IconName:match("^https?://") then
+        local assetName = "icon_" .. tostring(#IconName) .. "_" .. tostring(math.random(1, 1e6))
+
+        Library.ImageManager.AddAsset(
+            assetName,
+            0, -- fallback id (unused)
+            IconName
+        )
+
         return {
-            Url = IconName,
+            Url = Library.ImageManager.GetAsset(assetName),
             ImageRectOffset = Vector2.zero,
             ImageRectSize = Vector2.zero,
             Custom = true,
         }
     end
+
+    return Library:GetIcon(IconName)
 end
+
 
 function Library:Validate(Table: { [string]: any }, Template: { [string]: any }): { [string]: any }
     if typeof(Table) ~= "table" then
