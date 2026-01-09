@@ -1,9 +1,8 @@
 ## 1/9/26
 
 ```diff
-+ Forked Obsidian Ui Library To Add Custom Image Handling (HTTPS) For Window Icon Manager
- (Path to find elements: /core/uilib_stuff)
- + Reworked Changelog
++ Forked Obsidian Ui Library To Add Custom Image Handling (HTTPS) For Window Icon Manager (Path to find elements: /core/uilib_stuff)
+! Reworked Changelog
 ```
 
 ## 1/8/26
