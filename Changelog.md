@@ -29,7 +29,7 @@
 
 ```diff
 ! Reworked Main.lua
-! Reworked .md file
+! Reworked README.md file
 + Added This Changelog
 ```
 
