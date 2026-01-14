@@ -4,8 +4,7 @@ local ThemeManager 	= loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua")
 local SaveManager 	= loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 local Options 		= Library.Options
 local Toggles 		= Library.Toggles
-local Ver 			= loadstring(game:HttpGet(repo .. "version.txt"))()
-local Version 		= "MeowWare.lua | " .. Ver
+local Version 		= "MeowWare.lua | 0.0.1 [DEV]"
 Library.ForceCheckbox = false 
 Library.ShowToggleFrameInKeybinds = true 
 
